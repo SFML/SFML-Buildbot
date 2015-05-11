@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div id="content">
+        <div class="auth">
+        {% if authz.authenticated(request) %}
+        {{ authz.getUsernameHTML(request) }}
+        |<a href="{{ path_to_root }}logout">Logout</a>
+        {% elif authz.useHttpHeader and authz.httpLoginUrl %}
+        <a href="{{ authz.httpLoginUrl }}">Login</a>
+        {% elif authz.auth %}
+        <form method="post" name="login" action="{{ path_to_root }}login">
+            <input type="text" name="username" size="10" />
+            <input type="password" name="passwd" size="10" />
+            <input type="submit" value="login" />
+        </form>
+        {% endif %}
+        </div>
+
+<h1>Changesources</h1>
+
+{% if sources %}
+  <ol>
+  {% for s in sources -%}
+     <li class="{{ loop.cycle('alt', '') }}">{{ s.describe() }}</li>
+  {% endfor -%}
+  </ol>
+{% else %}
+  none (push only)
+{% endif %}
+</div>
+{% endblock %}

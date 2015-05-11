@@ -1,0 +1,22 @@
+def get_schedulers() :
+    from buildbot.schedulers.basic import AnyBranchScheduler
+    from buildbot.schedulers.forcesched import *
+    import builders
+
+    return [
+        AnyBranchScheduler(
+            name = 'default',
+            reason = 'source code modification',
+            builderNames = builders.get_builder_names()
+        ),
+        ForceScheduler(
+            name = 'force',
+            reason = FixedParameter(name = "reason", default = "force build"),
+            builderNames = builders.get_builder_names(),
+            branch = StringParameter(name = "branch", default = "master"),
+            revision = FixedParameter(name = "revision", default = ""),
+            repository = FixedParameter(name = "repository", default = "git://github.com/SFML/SFML.git"),
+            project = FixedParameter(name = "project", default = "SFML"),
+            properties = []
+        )
+    ]
