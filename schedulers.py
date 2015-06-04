@@ -7,7 +7,8 @@ def get_schedulers() :
         AnyBranchScheduler(
             name = 'default',
             reason = 'source code modification',
-            builderNames = builders.get_builder_names()
+            builderNames = builders.get_builder_names(),
+            treeStableTimer = 10
         ),
         ForceScheduler(
             name = 'force',
