@@ -57,6 +57,7 @@ def get_build_factory(configure, make):
             mode = 'full',
             shallow = True,
             method = 'clobber',
+            retry = (30, 5),
             progress = True,
             logEnviron = False
         ),
