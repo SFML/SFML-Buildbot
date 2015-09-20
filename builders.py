@@ -33,21 +33,19 @@ def make_msvc_builder(builder_name, slaves, slave_build_directory):
 
 def get_builders():
     return [
-        make_unix_builder('debian-gcc-64-bit', ['master-debian-64', 'tank-debian-64'], 'tmp'),
-        make_unix_builder('linux-gcc-32-bit', ['unassigned'], 'tmp'),
-        make_unix_builder('linux-gcc-64-bit', ['master-ubuntu-64', 'tank-ubuntu-64'], 'tmp'),
-        make_unix_builder('freebsd-gcc-64-bit', ['zsbzsb-freebsd'], 'tmp'),
+        make_msvc_builder('windows-vc10-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_msvc_builder('windows-vc10-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_msvc_builder('windows-vc11-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_msvc_builder('windows-vc11-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_msvc_builder('windows-vc12-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_msvc_builder('windows-vc12-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('debian-gcc-64', ['master-debian-64'], 'tmp'),
+        make_unix_builder('freebsd-gcc-64', ['zsbzsb-freebsd'], 'tmp'),
         make_unix_builder('osx-clang-universal', ['hiura-osx'], 'tmp'),
-        make_msvc_builder('windows-vc10-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc11-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc12-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.7.1-tdm-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.8.1-tdm-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.9.2-mingw-32-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc10-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc11-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc12-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.7.1-tdm-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.8.1-tdm-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.9.2-mingw-64-bit', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp')
+        make_unix_builder('windows-gcc-4.7.1-tdm-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('windows-gcc-4.7.1-tdm-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('windows-gcc-4.8.1-tdm-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('windows-gcc-4.8.1-tdm-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('windows-gcc-4.9.2-mingw-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
+        make_unix_builder('windows-gcc-4.9.2-mingw-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp')
     ]
