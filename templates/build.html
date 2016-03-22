@@ -140,7 +140,7 @@ SourceStamps:
 <tr><th>Name</th><th>Value</th><th>Source</th></tr>
 
 {% for p in properties %}
-{% if p.source != "Force Build Form" %}
+{% if p.source != "Force Build Form" and p.source != "SlaveEnvironment" and p.source != "slave" and p.source != "slave (deprecated)" and p.name != "toolchain_path" and p.name != "vc_include" and p.name != "vc_lib" and p.name != "vc_libpath" %}
   <tr class="{{ loop.cycle('alt', '') }}">
     <td class="left">{{ p.name|e }}</td>
     {% if p.short_value %}

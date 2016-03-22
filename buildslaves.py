@@ -6,13 +6,15 @@ def get_protocols():
 def get_slaves():
     return [
         BuildSlave('unassigned', '<password redacted>', properties = {'parallel' : 0}),
-        BuildSlave('expl0it3r-win8.1', '<password redacted>', properties = {'parallel' : 8}),
-        BuildSlave('hiura-osx', '<password redacted>', properties = {'parallel' : 2}),
-        BuildSlave('master', '<password redacted>', properties = {'parallel' : 8}),
-        BuildSlave('master-debian-64', '<password redacted>', properties = {'parallel' : 8}),
-        BuildSlave('master-ubuntu-64', '<password redacted>', properties = {'parallel' : 8}),
-        BuildSlave('master-windows7-64', '<password redacted>', properties = {'parallel' : 8}),
-        BuildSlave('tank-debian-64', '<password redacted>', properties = {'parallel' : 4}),
-        BuildSlave('tank-ubuntu-64', '<password redacted>', properties = {'parallel' : 4}),
-        BuildSlave('zsbzsb-freebsd', '<password redacted>', properties = {'parallel' : 2})
+        BuildSlave('expl0it3r-windows', '<password redacted>', properties = {'parallel' : 1}),
+        BuildSlave('hiura-osx', '<password redacted>', properties = {'parallel' : 3}),
+        BuildSlave('master', '<password redacted>', properties = {'parallel' : 3}),
+        BuildSlave('master-debian-64', '<password redacted>', properties = {'parallel' : 3}),
+        BuildSlave('master-ubuntu-64', '<password redacted>', properties = {'parallel' : 3}),
+        BuildSlave('master-windows', '<password redacted>', properties = {'parallel' : 5}),
+        BuildSlave('tank-debian-64', '<password redacted>', properties = {'parallel' : 5}),
+        BuildSlave('tank-ubuntu-64', '<password redacted>', properties = {'parallel' : 5}),
+        BuildSlave('zsbzsb-freebsd-64', '<password redacted>', properties = {'parallel' : 1}),
+        BuildSlave('binary1248-debian-64', '<password redacted>', properties = {'parallel' : 3}),
+        BuildSlave('binary1248-freebsd-64', '<password redacted>', properties = {'parallel' : 1})
     ]

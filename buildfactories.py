@@ -1,5 +1,7 @@
-def get_cmake_step(configure, link, type):
+def get_cmake_step(link, type, frameworks = 'no'):
+    from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import ShellCommand
+    from buildbot.status.results import SKIPPED
 
     build_type = ''
 
@@ -15,34 +17,71 @@ def get_cmake_step(configure, link, type):
     else:
         shared_libs += '-DBUILD_SHARED_LIBS=TRUE'
 
+    build_frameworks = ''
+    suffix = ''
+
+    if frameworks == 'frameworks':
+        build_frameworks += '-DSFML_BUILD_FRAMEWORKS=TRUE'
+        suffix = [link, type, 'frameworks'];
+    else:
+        build_frameworks += '-DSFML_BUILD_FRAMEWORKS=FALSE'
+        suffix = [link, type];
+
     return ShellCommand(
         name = 'cmake',
         description = ['configuring'],
-        descriptionSuffix = [link, type],
+        descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        command = [configure, build_type, shared_libs, '.'],
+        doStepIf = lambda step : (('frameworks' not in frameworks) or ('osx' in step.build.getProperty('buildername'))),
+        hideStepIf = lambda results, step : results == SKIPPED,
+        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, '.'],
+        env = {
+            'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
+            'INCLUDE' : Interpolate('%(prop:vc_include)s'),
+            'LIB' : Interpolate('%(prop:vc_lib)s'),
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+        },
         want_stdout = True,
         want_stderr = True,
         logEnviron = False
     )
 
-def get_build_step(make, link, type):
+def get_build_step(link, type, frameworks = 'no'):
+    from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
+    from buildbot.status.results import SKIPPED
+
+    suffix = ''
+
+    if frameworks == 'frameworks':
+        suffix = [link, type, 'frameworks'];
+    else:
+        suffix = [link, type];
 
     return Compile(
         description = ['building'],
-        descriptionSuffix = [link, type],
+        descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        command = make,
+        doStepIf = lambda step : (('frameworks' not in frameworks) or ('osx' in step.build.getProperty('buildername'))),
+        hideStepIf = lambda results, step : results == SKIPPED,
+        command = [Interpolate('%(prop:maker)s'), '-j', Interpolate('%(prop:parallel)s'), 'install'],
+        env = {
+            'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
+            'INCLUDE' : Interpolate('%(prop:vc_include)s'),
+            'LIB' : Interpolate('%(prop:vc_lib)s'),
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+        },
         want_stdout = True,
         want_stderr = True,
         logEnviron = False
     )
 
 
-def get_build_factory(configure, make):
+def get_build_factory():
+    from buildbot.steps.slave import SetPropertiesFromEnv
     from buildbot.process.factory import BuildFactory
     from buildbot.process.properties import Interpolate
+    from buildbot.steps.shell import ShellCommand
     from buildbot.steps.source.git import Git
     from buildbot.steps.transfer import DirectoryUpload
     from buildbot.steps.slave import RemoveDirectory
@@ -50,25 +89,35 @@ def get_build_factory(configure, make):
     from buildbot.status.results import SKIPPED
 
     steps = [
+        SetPropertiesFromEnv(
+            variables = ['PATH'],
+            hideStepIf = True
+        ),
         Git(
             description = ['cloning'],
             descriptionDone = ['clone'],
-            repourl = Interpolate('%(prop:repository)s'),
+            repourl = 'git://github.com/SFML/SFML.git', # Interpolate('%(prop:repository)s'),
             mode = 'full',
             shallow = True,
             method = 'clobber',
-            retry = (30, 5),
+            retry = (1, 120),
             progress = True,
+            env = {
+                'GIT_CURL_VERBOSE' : '1',
+                'GIT_TRACE' : '1'
+            },
             logEnviron = False
         ),
-        get_cmake_step(configure, 'static', 'debug'),
-        get_build_step(make, 'static', 'debug'),
-        get_cmake_step(configure, 'dynamic', 'debug'),
-        get_build_step(make, 'dynamic', 'debug'),
-        get_cmake_step(configure, 'static', 'release'),
-        get_build_step(make, 'static', 'release'),
-        get_cmake_step(configure, 'dynamic', 'release'),
-        get_build_step(make, 'dynamic', 'release'),
+        get_cmake_step('dynamic', 'debug'),
+        get_build_step('dynamic', 'debug'),
+        get_cmake_step('static', 'debug'),
+        get_build_step('static', 'debug'),
+        get_cmake_step('dynamic', 'release'),
+        get_build_step('dynamic', 'release'),
+        get_cmake_step('static', 'release'),
+        get_build_step('static', 'release'),
+        get_cmake_step('dynamic', 'release', 'frameworks'),
+        get_build_step('dynamic', 'release', 'frameworks'),
         DirectoryUpload(
             description = ['uploading'],
             descriptionSuffix = ['artifact'],
@@ -84,22 +133,24 @@ def get_build_factory(configure, make):
             description = ['cleaning slave'],
             descriptionDone = ['clean slave'],
             dir = Interpolate('%(prop:workdir)s'),
-            alwaysRun = True
+            alwaysRun = True,
+            hideStepIf = True
         ),
         MasterShellCommand(
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
             doStepIf = lambda step : ('windows' in step.build.getProperty('buildername')),
-            hideStepIf = lambda results, step : results == SKIPPED,
+            hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
-                """mkdir -p artifacts/by-revision/%(prop:got_revision)s &&
-                mkdir -p artifacts/by-branch/%(src::branch:-master)s &&
-                cd %(prop:buildername)s/tmp &&
-                zip -r %(prop:buildername)s %(prop:got_revision)s &&
-                mv %(prop:buildername)s.zip ../../artifacts/by-revision/%(prop:got_revision)s &&
-                ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip &&
-                rm -rf "../tmp" """
+                'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
+                'mkdir -p artifacts/by-branch/%(src::branch:-master)s && '
+                'cd %(prop:buildername)s/tmp && '
+                'zip -r %(prop:buildername)s.zip %(prop:got_revision)s && '
+                'mv %(prop:buildername)s.zip ../../artifacts/by-revision/%(prop:got_revision)s && '
+                'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip && '
+                'chmod -R a+rX ../../artifacts && '
+                'rm -rf "../tmp"'
             )
         ),
         MasterShellCommand(
@@ -107,15 +158,16 @@ def get_build_factory(configure, make):
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
             doStepIf = lambda step : (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername'))),
-            hideStepIf = lambda results, step : results == SKIPPED,
+            hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
-                """mkdir -p artifacts/by-revision/%(prop:got_revision)s &&
-                mkdir -p artifacts/by-branch/%(src::branch:-master)s &&
-                cd %(prop:buildername)s/tmp &&
-                tar czf %(prop:buildername)s.tar.gz %(prop:got_revision)s/ &&
-                mv %(prop:buildername)s.tar.gz ../../artifacts/by-revision/%(prop:got_revision)s &&
-                ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz &&
-                rm -rf "../tmp" """
+                'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
+                'mkdir -p artifacts/by-branch/%(src::branch:-master)s && '
+                'cd %(prop:buildername)s/tmp && '
+                'tar czf %(prop:buildername)s.tar.gz %(prop:got_revision)s/ && '
+                'mv %(prop:buildername)s.tar.gz ../../artifacts/by-revision/%(prop:got_revision)s && '
+                'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz && '
+                'chmod -R a+rX ../../artifacts && '
+                'rm -rf "../tmp"'
             )
         )
     ]
@@ -124,18 +176,67 @@ def get_build_factory(configure, make):
 
     return factory
 
-def get_unix_build_factory():
+def get_static_analysis_build_factory():
+    from buildbot.steps.source.git import Git
     from buildbot.process.properties import Interpolate
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.steps.shell import Compile
+    from buildbot.steps.slave import RemoveDirectory
+    from buildbot.process.factory import BuildFactory
 
-    return get_build_factory(
-        ['cmake', '-G', 'Unix Makefiles', '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install')],
-        ['make', '-j', Interpolate('%(prop:parallel)s'), 'install']
-    )
+    steps = [
+        Git(
+            description = ['cloning'],
+            descriptionDone = ['clone'],
+            repourl = 'git://github.com/SFML/SFML.git', # Interpolate('%(prop:repository)s'),
+            mode = 'full',
+            shallow = True,
+            method = 'clobber',
+            retry = (1, 120),
+            progress = True,
+            env = {
+                'GIT_CURL_VERBOSE' : '1',
+                'GIT_TRACE' : '1'
+            },
+            logEnviron = False
+        ),
+        ShellCommand(
+            name = 'scan-build configure',
+            description = ['scan-build configuring'],
+            descriptionDone = ['scan-build configure'],
+            command = ['scan-build', 'cmake', '-G', 'Unix Makefiles', '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), '-DCMAKE_BUILD_TYPE=Debug', '-DBUILD_SHARED_LIBS=FALSE', '.'],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        Compile(
+            name = 'scan-build make',
+            description = ['scan-build building'],
+            descriptionDone = ['scan-build make'],
+            command = ['scan-build', 'make', '-j', Interpolate('%(prop:parallel)s')],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        Compile(
+            name = 'cppcheck',
+            description = ['cppcheck'],
+            descriptionDone = ['cppcheck'],
+            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        RemoveDirectory(
+            name = 'clean',
+            description = ['cleaning slave'],
+            descriptionDone = ['clean slave'],
+            dir = Interpolate('%(prop:workdir)s'),
+            alwaysRun = True,
+            hideStepIf = True
+        )
+    ]
 
-def get_msvc_build_factory():
-    from buildbot.process.properties import Interpolate
+    factory = BuildFactory(steps)
 
-    return get_build_factory(
-        ['cmake', '-G', 'NMake Makefiles JOM', '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install')],
-        ['nmake', '-j', Interpolate('%(prop:parallel)s'), 'install']
-    )
+    return factory

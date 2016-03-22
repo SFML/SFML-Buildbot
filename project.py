@@ -5,4 +5,4 @@ def get_title_url():
     return 'http://www.sfml-dev.org'
 
 def get_buildbot_url():
-    return 'http://<buildbot url redacted>/'
+    return 'http://ci.sfml-dev.org/'

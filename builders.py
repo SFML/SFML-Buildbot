@@ -1,9 +1,16 @@
+from buildbot import locks
+
 builder_names = []
+
+slave_lock = locks.SlaveLock(
+    'slave_lock',
+    maxCount = 1
+)
 
 def get_builder_names():
     return builder_names
 
-def make_unix_builder(builder_name, slaves, slave_build_directory):
+def make_builder(builder_name, slaves, slave_build_directory, generator, maker, toolchain_path, vc_include, vc_lib, vc_libpath):
     from buildbot.config import BuilderConfig
     import buildfactories
 
@@ -14,10 +21,19 @@ def make_unix_builder(builder_name, slaves, slave_build_directory):
         name = builder_name,
         slavenames = slaves,
         slavebuilddir = slave_build_directory,
-        factory = buildfactories.get_unix_build_factory()
+        locks = [slave_lock.access('counting')],
+        factory = buildfactories.get_build_factory(),
+        properties = {
+            'generator' : generator,
+            'maker' : maker,
+            'toolchain_path' : toolchain_path,
+            'vc_include' : vc_include,
+            'vc_lib' : vc_lib,
+            'vc_libpath' : vc_libpath
+        }
     )
 
-def make_msvc_builder(builder_name, slaves, slave_build_directory):
+def make_static_analysis_builder(builder_name, slaves, slave_build_directory):
     from buildbot.config import BuilderConfig
     import buildfactories
 
@@ -28,24 +44,31 @@ def make_msvc_builder(builder_name, slaves, slave_build_directory):
         name = builder_name,
         slavenames = slaves,
         slavebuilddir = slave_build_directory,
-        factory = buildfactories.get_msvc_build_factory()
+        locks = [slave_lock.access('counting')],
+        factory = buildfactories.get_static_analysis_build_factory()
     )
+
+def setup_msvc(version):
+    return
 
 def get_builders():
+    import paths
+
     return [
-        make_msvc_builder('windows-vc10-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc10-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc11-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc11-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc12-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_msvc_builder('windows-vc12-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('debian-gcc-64', ['master-debian-64'], 'tmp'),
-        make_unix_builder('freebsd-gcc-64', ['zsbzsb-freebsd'], 'tmp'),
-        make_unix_builder('osx-clang-universal', ['hiura-osx'], 'tmp'),
-        make_unix_builder('windows-gcc-4.7.1-tdm-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.7.1-tdm-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.8.1-tdm-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.8.1-tdm-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.9.2-mingw-32', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp'),
-        make_unix_builder('windows-gcc-4.9.2-mingw-64', ['master-windows7-64', 'expl0it3r-win8.1'], 'tmp')
+        make_builder('windows-vc11-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc11x86path, paths.vc11x86include, paths.vc11x86lib, paths.vc11x86libpath),
+        make_builder('windows-vc11-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc11x64path, paths.vc11x64include, paths.vc11x64lib, paths.vc11x64libpath),
+        make_builder('windows-vc12-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc12x86path, paths.vc12x86include, paths.vc12x86lib, paths.vc12x86libpath),
+        make_builder('windows-vc12-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc12x64path, paths.vc12x64include, paths.vc12x64lib, paths.vc12x64libpath),
+        make_builder('windows-vc14-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc14x86path, paths.vc14x86include, paths.vc14x86lib, paths.vc14x86libpath),
+        make_builder('windows-vc14-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc14x64path, paths.vc14x64include, paths.vc14x64lib, paths.vc14x64libpath),
+        make_builder('debian-gcc-64', ['master-debian-64', 'binary1248-debian-64'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
+        make_builder('freebsd-gcc-64', ['zsbzsb-freebsd-64', 'binary1248-freebsd-64'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
+        make_builder('osx-clang-universal', ['hiura-osx'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
+        make_builder('windows-gcc-471-tdm-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc471tdm32path, '', '', ''),
+        make_builder('windows-gcc-471-tdm-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc471tdm64path, '', '', ''),
+        make_builder('windows-gcc-481-tdm-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc481tdm32path, '', '', ''),
+        make_builder('windows-gcc-481-tdm-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc481tdm64path, '', '', ''),
+        make_builder('windows-gcc-520-mingw-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc520mingw32path, '', '', ''),
+        make_builder('windows-gcc-520-mingw-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc520mingw64path, '', '', ''),
+        make_static_analysis_builder('static-analysis', ['binary1248-debian-64'], 'tmp')
     ]

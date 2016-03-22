@@ -6,11 +6,27 @@ def get_irc():
         nick = '<IRC nick redacted>',
         channels = ['<IRC channels redacted>'],
         notify_events = {
+            'started' : 1,
+            'finished' : 1,
+            'failure' : 1,
+            'success' : 1,
+            'exception' : 1
+        }
+    )
+
+def get_other_irc():
+    from buildbot.status import words
+
+    return words.IRC(
+        host = '<IRC server redacted>',
+        nick = '<IRC nick redacted>',
+        channels = ['<IRC channels redacted>'],
+        notify_events = {
             'started' : 0,
             'finished' : 0,
-            'failure' : 1,
+            'failure' : 0,
             'success' : 0,
-            'exception' : 1
+            'exception' : 0
         }
     )
 
@@ -39,12 +55,25 @@ def get_web():
     )
 
     return html.WebStatus(
-        http_port = 8010,
+        http_port = "tcp:8010:interface=127.0.0.1",
         authz = authz_cfg,
-        change_hook_dialects = {'github' : True},
+        change_hook_dialects = {'github' : {}},
         change_hook_auth = ['file:changehook.passwd'],
         revlink = 'http://github.com/SFML/SFML/commit/%s'
     )
 
+def get_github_status():
+    from buildbot.process.properties import Interpolate
+    from buildbot.status.github import GitHubStatus
+
+    return GitHubStatus(
+        token = '<token redacted>',
+        repoOwner = 'SFML',
+        repoName = 'SFML',
+        sha = Interpolate("%(prop:got_revision)s"),
+        startDescription = Interpolate("Build #%(prop:buildnumber)s started."),
+        endDescription = Interpolate("Build #%(prop:buildnumber)s done."),
+    )
+
 def get_status():
-    return [get_web(), get_irc()]
+    return [get_web(), get_irc(), get_other_irc(), get_github_status()]

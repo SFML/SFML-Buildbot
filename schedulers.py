@@ -1,6 +1,8 @@
 def get_schedulers() :
     from buildbot.schedulers.basic import AnyBranchScheduler
-    from buildbot.schedulers.forcesched import *
+    from buildbot.schedulers.forcesched import ForceScheduler
+    from buildbot.schedulers.forcesched import FixedParameter
+    from buildbot.schedulers.forcesched import StringParameter
     import builders
 
     return [
