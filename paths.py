@@ -250,14 +250,10 @@ vc14x64libpath = (
     'C:/Program Files (x86)/Microsoft SDKs/Windows Kits/10/ExtensionSDKs/Microsoft.VCLibs/14.0/References/CommonConfiguration/neutral;'
 )
 
-gcc471tdm32path = 'C:/Dev/MinGW32-TDM471/bin/;'
+gcc492tdm32path = 'C:/Dev/MinGW32-TDM492/bin/;'
 
-gcc471tdm64path = 'C:/Dev/MinGW64-TDM471/bin/;'
+gcc492tdm64path = 'C:/Dev/MinGW64-TDM492/bin/;'
 
-gcc481tdm32path = 'C:/Dev/MinGW32-TDM481/bin/;'
+gcc530mingw32path = 'C:/Dev/MinGW32-PosixDwarf530r0/bin/;'
 
-gcc481tdm64path = 'C:/Dev/MinGW64-TDM481/bin/;'
-
-gcc520mingw32path = 'C:/Dev/MinGW32-PosixDwarf520r0/bin/;'
-
-gcc520mingw64path = 'C:/Dev/MinGW64-PosixSEH520r0/bin/;'
+gcc530mingw64path = 'C:/Dev/MinGW64-PosixSEH530r0/bin/;'
