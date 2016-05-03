@@ -18,6 +18,8 @@ def get_cmake_step(link, type, osxExtra = []):
         shared_libs += '-DBUILD_SHARED_LIBS=TRUE'
 
     build_frameworks = ''
+    build_target = ''
+    build_sdk = ''
     suffix = ''
 
     if 'frameworks' in osxExtra:
@@ -28,9 +30,12 @@ def get_cmake_step(link, type, osxExtra = []):
         suffix = [link, type];
 
     if 'oldSDK' in osxExtra:
-        build_sdk += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.7'
+        build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.7'
         build_sdk += '-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.7.sdk'
         suffix.append('10.7')
+    # NOTE: this cannot be "unset" from the command line;
+    #       it therefore has to run last, if no clean operation happen.
+        
 
     return ShellCommand(
         name = 'cmake',
@@ -39,7 +44,7 @@ def get_cmake_step(link, type, osxExtra = []):
         descriptionDone = ['configure'],
         doStepIf = lambda step : ((not osxExtra) or ('osx' in step.build.getProperty('buildername')))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))
         hideStepIf = lambda results, step : results == SKIPPED,
-        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, '.'],
+        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '.'],
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -116,7 +121,6 @@ def get_build_factory():
             },
             logEnviron = False
         ),
-        get_cmake_step('dynamic', 'debug', ['oldSDK']), # do it first so that files are overriden by other steps
         get_cmake_step('dynamic', 'debug'),
         get_build_step('dynamic', 'debug'),
         get_cmake_step('static', 'debug'),
@@ -178,6 +182,17 @@ def get_build_factory():
                 'chmod -R a+rX ../../artifacts && '
                 'rm -rf "../tmp"'
             )
+        ),
+        # We don't want this in the artifact:
+        get_cmake_step('dynamic', 'debug', ['oldSDK']),
+        get_build_step('dynamic', 'debug', ['oldSDK']),
+        RemoveDirectory(
+            name = 'clean',
+            description = ['cleaning slave'],
+            descriptionDone = ['clean slave'],
+            dir = Interpolate('%(prop:workdir)s'),
+            alwaysRun = True,
+            hideStepIf = True
         )
     ]
 
