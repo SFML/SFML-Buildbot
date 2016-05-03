@@ -63,7 +63,7 @@ def get_builders():
         make_builder('windows-vc14-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'NMake Makefiles JOM', 'jom', paths.vc14x64path, paths.vc14x64include, paths.vc14x64lib, paths.vc14x64libpath),
         make_builder('debian-gcc-64', ['master-debian-64', 'binary1248-debian-64'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
         make_builder('freebsd-gcc-64', ['zsbzsb-freebsd-64', 'binary1248-freebsd-64'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
-        make_builder('osx-clang-universal', ['hiura-osx'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
+        make_builder('osx-clang-el-capitan', ['hiura-osx'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
         make_builder('windows-gcc-492-tdm-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm32path, '', '', ''),
         make_builder('windows-gcc-492-tdm-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm64path, '', '', ''),
         make_builder('windows-gcc-530-mingw-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc530mingw32path, '', '', ''),
