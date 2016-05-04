@@ -130,6 +130,15 @@ def get_build_factory():
         get_build_step('static', 'release'),
         get_cmake_step('dynamic', 'release', ['frameworks']),
         get_build_step('dynamic', 'release', ['frameworks']),
+        ShellCommand( # Removing CMakeCache.txt so that the next step works
+            name = 'clean cmake cache',
+            description = ['cleaning configuration'],
+            descriptionDone = ['cleaning configuration'],
+            command = ['rm', '-f', 'CMakeCache.txt'],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
         get_cmake_step('dynamic', 'debug', ['oldSDK']),
         get_build_step('dynamic', 'debug', ['oldSDK']),
         DirectoryUpload(
