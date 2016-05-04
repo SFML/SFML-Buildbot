@@ -41,7 +41,8 @@ def get_cmake_step(link, type, osxExtra = []):
         descriptionDone = ['configure'],
         doStepIf = lambda step : ((not osxExtra) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername'))),
         hideStepIf = lambda results, step : results == SKIPPED,
-        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '.'],
+        workdir = Interpolate('%(prop:workdir)s/build/build'),
+        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..'],
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -76,6 +77,7 @@ def get_build_step(link, type, osxExtra = []):
         descriptionDone = ['build'],
         doStepIf = lambda step : ((not osxExtra) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername'))),
         hideStepIf = lambda results, step : results == SKIPPED,
+        workdir = Interpolate('%(prop:workdir)s/build/build'),
         command = [Interpolate('%(prop:maker)s'), '-j', Interpolate('%(prop:parallel)s'), target],
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
@@ -97,6 +99,7 @@ def get_build_factory():
     from buildbot.steps.source.git import Git
     from buildbot.steps.transfer import DirectoryUpload
     from buildbot.steps.slave import RemoveDirectory
+    from buildbot.steps.slave import MakeDirectory
     from buildbot.steps.master import MasterShellCommand
     from buildbot.status.results import SKIPPED
 
@@ -120,18 +123,98 @@ def get_build_factory():
             },
             logEnviron = False
         ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
         get_cmake_step('dynamic', 'debug'),
         get_build_step('dynamic', 'debug'),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
         get_cmake_step('static', 'debug'),
         get_build_step('static', 'debug'),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
         get_cmake_step('dynamic', 'release'),
         get_build_step('dynamic', 'release'),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
         get_cmake_step('static', 'release'),
         get_build_step('static', 'release'),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build'),
+            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
+            hideStepIf = lambda results, step : results == SKIPPED,
+        ),
         get_cmake_step('dynamic', 'release', ['frameworks']),
         get_build_step('dynamic', 'release', ['frameworks']),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build'),
+            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
+            hideStepIf = lambda results, step : results == SKIPPED,
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build'),
+            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
+            hideStepIf = lambda results, step : results == SKIPPED,
+        ),
         get_cmake_step('dynamic', 'debug', ['oldSDK']),
         get_build_step('dynamic', 'debug', ['oldSDK']),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build'),
+            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
+            hideStepIf = lambda results, step : results == SKIPPED,
+        ),
         DirectoryUpload(
             description = ['uploading'],
             descriptionSuffix = ['artifact'],
