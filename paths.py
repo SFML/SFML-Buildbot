@@ -254,6 +254,6 @@ gcc492tdm32path = 'C:/Dev/MinGW32-TDM492/bin/;'
 
 gcc492tdm64path = 'C:/Dev/MinGW64-TDM492/bin/;'
 
-gcc530mingw32path = 'C:/Dev/MinGW32-PosixDwarf530r0/bin/;'
+gcc610mingw32path = 'C:/Dev/MinGW32-PosixDwarf610r0/bin/;'
 
-gcc530mingw64path = 'C:/Dev/MinGW64-PosixSEH530r0/bin/;'
+gcc610mingw64path = 'C:/Dev/MinGW64-PosixSEH610r0/bin/;'

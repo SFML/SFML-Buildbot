@@ -66,7 +66,7 @@ def get_builders():
         make_builder('osx-clang-el-capitan', ['hiura-osx'], 'tmp', 'Unix Makefiles', 'make', '', '', '', ''),
         make_builder('windows-gcc-492-tdm-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm32path, '', '', ''),
         make_builder('windows-gcc-492-tdm-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm64path, '', '', ''),
-        make_builder('windows-gcc-530-mingw-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc530mingw32path, '', '', ''),
-        make_builder('windows-gcc-530-mingw-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc530mingw64path, '', '', ''),
+        make_builder('windows-gcc-610-mingw-32', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw32path, '', '', ''),
+        make_builder('windows-gcc-610-mingw-64', ['master-windows', 'expl0it3r-windows'], 'tmp', 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw64path, '', '', ''),
         make_static_analysis_builder('static-analysis', ['binary1248-debian-64'], 'tmp')
     ]
