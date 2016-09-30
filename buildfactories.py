@@ -246,7 +246,8 @@ def get_build_factory():
                 'zip -r %(prop:buildername)s.zip %(prop:got_revision)s && '
                 'mv %(prop:buildername)s.zip ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip && '
-                'chmod -R a+rX ../../artifacts && '
+                'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
+                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
                 'rm -rf "../tmp"'
             )
         ),
@@ -263,7 +264,8 @@ def get_build_factory():
                 'tar czf %(prop:buildername)s.tar.gz %(prop:got_revision)s/ && '
                 'mv %(prop:buildername)s.tar.gz ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz && '
-                'chmod -R a+rX ../../artifacts && '
+                'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
+                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
                 'rm -rf "../tmp"'
             )
         )
