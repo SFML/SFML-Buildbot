@@ -111,7 +111,7 @@ def get_build_factory():
         Git(
             description = ['cloning'],
             descriptionDone = ['clone'],
-            repourl = 'git://github.com/SFML/SFML.git', # Interpolate('%(prop:repository)s'),
+            repourl = Interpolate('%(prop:repository)s'),
             mode = 'full',
             shallow = True,
             method = 'clobber',
@@ -222,11 +222,11 @@ def get_build_factory():
             slavesrc = Interpolate('%(prop:workdir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
             compress = 'bz2',
-            doStepIf = lambda step : ('freebsd' not in step.build.getProperty('buildername')),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('freebsd' not in step.build.getProperty('buildername'))),
             hideStepIf = lambda results, step : results == SKIPPED,
         ),
         RemoveDirectory(
-            name = 'clean',
+            name = 'clean slave',
             description = ['cleaning slave'],
             descriptionDone = ['clean slave'],
             dir = Interpolate('%(prop:workdir)s'),
@@ -237,7 +237,7 @@ def get_build_factory():
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : ('windows' in step.build.getProperty('buildername')),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('windows' in step.build.getProperty('buildername'))),
             hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
@@ -248,14 +248,13 @@ def get_build_factory():
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip && '
                 'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
-                'rm -rf "../tmp"'
             )
         ),
         MasterShellCommand(
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername'))),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername')))),
             hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
@@ -266,7 +265,16 @@ def get_build_factory():
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz && '
                 'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
-                'rm -rf "../tmp"'
+            )
+        ),
+        MasterShellCommand(
+            name = 'clean master',
+            description = ['cleaning master'],
+            descriptionDone = ['clean master'],
+            alwaysRun = True,
+            hideStepIf = True,
+            command = Interpolate(
+                'rm -rf "%(prop:buildername)s/tmp"'
             )
         )
     ]

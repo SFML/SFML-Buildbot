@@ -14,12 +14,12 @@ def get_schedulers() :
         ),
         ForceScheduler(
             name = 'force',
-            reason = FixedParameter(name = "reason", default = "force build"),
+            reason = StringParameter(name = "reason", default = "force build", size = 100),
             builderNames = builders.get_builder_names(),
-            branch = StringParameter(name = "branch", default = "master"),
-            revision = FixedParameter(name = "revision", default = ""),
-            repository = FixedParameter(name = "repository", default = "git://github.com/SFML/SFML.git"),
-            project = FixedParameter(name = "project", default = "SFML"),
+            branch = StringParameter(name = "branch", default = "master", size = 100),
+            revision = StringParameter(name = "revision", default = "", size = 100),
+            repository = StringParameter(name = "repository", default = "https://github.com/SFML/SFML.git", regex = r"^https://github.com/[\w-]*/[\w-]*\.git$", size = 100),
+            project = StringParameter(name = "project", default = "SFML", size = 100),
             properties = []
         )
     ]

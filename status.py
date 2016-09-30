@@ -58,8 +58,7 @@ def get_web():
         http_port = "tcp:8010:interface=127.0.0.1",
         authz = authz_cfg,
         change_hook_dialects = {'github' : {}},
-        change_hook_auth = ['file:changehook.passwd'],
-        revlink = 'http://github.com/SFML/SFML/commit/%s'
+        change_hook_auth = ['file:changehook.passwd']
     )
 
 def get_github_status():
