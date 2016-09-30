@@ -5,13 +5,7 @@ the buildmaster directory are checked into this repository. Simply create a new
 buildmaster and paste/overwrite any existing files with the ones in this
 repository. Sensitive information has been redacted.
 
-Tested with the Buildbot 0.8.9 package on Debian Jessie.
-
-Because the GitHub API has changed since Buildbot 0.8.9 was released, replacing
-the default version of the GitHub webhook at buildbot/status/web/hooks/github.py
-with a more recent version from the official repository at
-https://github.com/buildbot/buildbot/blob/master/master/buildbot/status/web/hooks/github.py
-will be necessary.
+Tested with Buildbot 0.8.14 on Debian Jessie.
 
 If you want to contribute to the SFML project by providing additional builder
 resources, contact one of the project maintainers or simply post on the SFML forum.
