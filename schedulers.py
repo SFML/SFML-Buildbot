@@ -10,7 +10,7 @@ def get_schedulers() :
             name = 'default',
             reason = 'source code modification',
             builderNames = builders.get_builder_names(),
-            treeStableTimer = 10
+            treeStableTimer = 120
         ),
         ForceScheduler(
             name = 'force',
