@@ -295,7 +295,7 @@ def get_static_analysis_build_factory():
         Git(
             description = ['cloning'],
             descriptionDone = ['clone'],
-            repourl = 'git://github.com/SFML/SFML.git', # Interpolate('%(prop:repository)s'),
+            repourl = Interpolate('%(prop:repository)s'),
             mode = 'full',
             shallow = True,
             method = 'clobber',
