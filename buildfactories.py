@@ -222,7 +222,7 @@ def get_build_factory():
             slavesrc = Interpolate('%(prop:workdir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
             compress = 'bz2',
-            doStepIf = lambda step : (('https://github.com/SFML/SFML' in step.build.getProperty('repository')) and ('freebsd' not in step.build.getProperty('buildername'))),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('freebsd' not in step.build.getProperty('buildername'))),
             hideStepIf = lambda results, step : results == SKIPPED,
         ),
         RemoveDirectory(
@@ -237,7 +237,7 @@ def get_build_factory():
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (('https://github.com/SFML/SFML' in step.build.getProperty('repository')) and ('windows' in step.build.getProperty('buildername'))),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('windows' in step.build.getProperty('buildername'))),
             hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
@@ -247,14 +247,14 @@ def get_build_factory():
                 'mv %(prop:buildername)s.zip ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip && '
                 'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
-                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
+                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s'
             )
         ),
         MasterShellCommand(
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (('https://github.com/SFML/SFML' in step.build.getProperty('repository')) and (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername')))),
+            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername')))),
             hideStepIf = True, # lambda results, step : results == SKIPPED,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
@@ -264,7 +264,7 @@ def get_build_factory():
                 'mv %(prop:buildername)s.tar.gz ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz && '
                 'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
-                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s && '
+                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s'
             )
         ),
         MasterShellCommand(
