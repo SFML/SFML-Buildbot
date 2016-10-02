@@ -1,7 +1,24 @@
-def get_cmake_step(link, type, osxExtra = []):
+from buildbot import locks
+
+slave_cpu_lock = locks.SlaveLock(
+    'slave_cpu_lock',
+    maxCount = 1
+)
+
+def skipped_or_success(results, step):
+    from buildbot.status.results import SKIPPED
+    from buildbot.status.results import SUCCESS
+
+    return ((results == SKIPPED) or (results == SUCCESS))
+
+def skipped(results, step):
+    from buildbot.status.results import SKIPPED
+
+    return (results == SKIPPED)
+
+def get_cmake_step(link, type, options = []):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import ShellCommand
-    from buildbot.status.results import SKIPPED
 
     build_type = ''
 
@@ -22,27 +39,32 @@ def get_cmake_step(link, type, osxExtra = []):
     build_sdk = ''
     suffix = ''
 
-    if 'frameworks' in osxExtra:
+    if 'frameworks' in options:
         build_frameworks += '-DSFML_BUILD_FRAMEWORKS=TRUE'
         suffix = [link, type, 'frameworks']
     else:
         build_frameworks += '-DSFML_BUILD_FRAMEWORKS=FALSE'
         suffix = [link, type]
 
-    if 'oldSDK' in osxExtra:
+    if 'oldSDK' in options:
         build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.7'
         build_sdk += '-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.7.sdk'
         suffix.append('10.7')
+
+    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..']
+
+    if 'scan-build' in options:
+        configure_command.insert(0, 'scan-build')
 
     return ShellCommand(
         name = 'cmake',
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ((not osxExtra) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername'))),
-        hideStepIf = lambda results, step : results == SKIPPED,
+        doStepIf = lambda step : ('scan-build' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
-        command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..'],
+        command = configure_command,
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -54,31 +76,39 @@ def get_cmake_step(link, type, osxExtra = []):
         logEnviron = False
     )
 
-def get_build_step(link, type, osxExtra = []):
+def get_build_step(link, type, options = []):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
-    from buildbot.status.results import SKIPPED
 
     suffix = ''
     target = 'install'
 
-    if 'frameworks' in osxExtra:
+    if 'frameworks' in options:
         suffix = [link, type, 'frameworks']
     else:
         suffix = [link, type]
 
-    if 'oldSDK' in osxExtra:
+    if 'oldSDK' in options:
         suffix.append('10.7')
         target = 'all'
+
+    if 'scan-build' in options:
+        target = 'all'
+
+    build_command = [Interpolate('%(prop:maker)s'), '-j', Interpolate('%(prop:parallel)s'), target]
+
+    if 'scan-build' in options:
+        build_command.insert(0, 'scan-build')
 
     return Compile(
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ((not osxExtra) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername'))),
-        hideStepIf = lambda results, step : results == SKIPPED,
+        doStepIf = lambda step : ('scan-build' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
-        command = [Interpolate('%(prop:maker)s'), '-j', Interpolate('%(prop:parallel)s'), target],
+        locks = [slave_cpu_lock.access('counting')],
+        command = build_command,
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -90,24 +120,16 @@ def get_build_step(link, type, osxExtra = []):
         logEnviron = False
     )
 
-
-def get_build_factory():
+def get_env_step():
     from buildbot.steps.slave import SetPropertiesFromEnv
-    from buildbot.process.factory import BuildFactory
-    from buildbot.process.properties import Interpolate
-    from buildbot.steps.shell import ShellCommand
-    from buildbot.steps.source.git import Git
-    from buildbot.steps.transfer import DirectoryUpload
-    from buildbot.steps.slave import RemoveDirectory
-    from buildbot.steps.slave import MakeDirectory
-    from buildbot.steps.master import MasterShellCommand
-    from buildbot.status.results import SKIPPED
 
-    steps = [
-        SetPropertiesFromEnv(
-            variables = ['PATH'],
-            hideStepIf = True
-        ),
+    return [SetPropertiesFromEnv(variables = ['PATH'], hideStepIf = skipped_or_success)]
+
+def get_clone_step():
+    from buildbot.steps.source.git import Git
+    from buildbot.process.properties import Interpolate
+
+    return [
         Git(
             description = ['cloning'],
             descriptionDone = ['clone'],
@@ -122,99 +144,41 @@ def get_build_factory():
                 'GIT_TRACE' : '1'
             },
             logEnviron = False
-        ),
-        MakeDirectory(
-            name = 'create build directory',
-            description = ['preparing build directory'],
-            descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        get_cmake_step('dynamic', 'debug'),
-        get_build_step('dynamic', 'debug'),
-        RemoveDirectory(
-            name = 'remove build directory',
-            description = ['removing build directory'],
-            descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        MakeDirectory(
-            name = 'create build directory',
-            description = ['preparing build directory'],
-            descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        get_cmake_step('static', 'debug'),
-        get_build_step('static', 'debug'),
-        RemoveDirectory(
-            name = 'remove build directory',
-            description = ['removing build directory'],
-            descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        MakeDirectory(
-            name = 'create build directory',
-            description = ['preparing build directory'],
-            descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        get_cmake_step('dynamic', 'release'),
-        get_build_step('dynamic', 'release'),
-        RemoveDirectory(
-            name = 'remove build directory',
-            description = ['removing build directory'],
-            descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        MakeDirectory(
-            name = 'create build directory',
-            description = ['preparing build directory'],
-            descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
-        get_cmake_step('static', 'release'),
-        get_build_step('static', 'release'),
-        RemoveDirectory(
-            name = 'remove build directory',
-            description = ['removing build directory'],
-            descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build')
-        ),
+        )
+    ]
+
+def get_configuration_build_steps(link, type, options = []):
+    from buildbot.steps.slave import RemoveDirectory
+    from buildbot.steps.slave import MakeDirectory
+    from buildbot.process.properties import Interpolate
+
+    return [
         MakeDirectory(
             name = 'create build directory',
             description = ['preparing build directory'],
             descriptionDone = ['create build directory'],
             dir = Interpolate('%(prop:workdir)s/build/build'),
-            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
-            hideStepIf = lambda results, step : results == SKIPPED,
+            doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
+            hideStepIf = skipped_or_success
         ),
-        get_cmake_step('dynamic', 'release', ['frameworks']),
-        get_build_step('dynamic', 'release', ['frameworks']),
+        get_cmake_step(link, type, options),
+        get_build_step(link, type, options),
         RemoveDirectory(
             name = 'remove build directory',
             description = ['removing build directory'],
             descriptionDone = ['remove build directory'],
             dir = Interpolate('%(prop:workdir)s/build/build'),
-            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
-            hideStepIf = lambda results, step : results == SKIPPED,
-        ),
-        MakeDirectory(
-            name = 'create build directory',
-            description = ['preparing build directory'],
-            descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build'),
-            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
-            hideStepIf = lambda results, step : results == SKIPPED,
-        ),
-        get_cmake_step('dynamic', 'debug', ['oldSDK']),
-        get_build_step('dynamic', 'debug', ['oldSDK']),
-        RemoveDirectory(
-            name = 'remove build directory',
-            description = ['removing build directory'],
-            descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build'),
-            doStepIf = lambda step : ('osx' in step.build.getProperty('buildername')),
-            hideStepIf = lambda results, step : results == SKIPPED,
-        ),
+            doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
+            hideStepIf = skipped_or_success
+        )
+    ]
+
+def get_artifact_step():
+    from buildbot.process.properties import Interpolate
+    from buildbot.steps.transfer import DirectoryUpload
+    from buildbot.steps.master import MasterShellCommand
+
+    return [
         DirectoryUpload(
             description = ['uploading'],
             descriptionSuffix = ['artifact'],
@@ -222,47 +186,22 @@ def get_build_factory():
             slavesrc = Interpolate('%(prop:workdir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
             compress = 'bz2',
-            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('freebsd' not in step.build.getProperty('buildername'))),
-            hideStepIf = lambda results, step : results == SKIPPED,
-        ),
-        RemoveDirectory(
-            name = 'clean slave',
-            description = ['cleaning slave'],
-            descriptionDone = ['clean slave'],
-            dir = Interpolate('%(prop:workdir)s'),
-            alwaysRun = True,
-            hideStepIf = True
+            doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
+            hideStepIf = skipped_or_success
         ),
         MasterShellCommand(
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and ('windows' in step.build.getProperty('buildername'))),
-            hideStepIf = True, # lambda results, step : results == SKIPPED,
+            doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
+            hideStepIf = skipped_or_success,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
                 'mkdir -p artifacts/by-branch/%(src::branch:-master)s && '
                 'cd %(prop:buildername)s/tmp && '
-                'zip -r %(prop:buildername)s.zip %(prop:got_revision)s && '
-                'mv %(prop:buildername)s.zip ../../artifacts/by-revision/%(prop:got_revision)s && '
-                'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.zip ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.zip && '
-                'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
-                'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s'
-            )
-        ),
-        MasterShellCommand(
-            name = 'artifact',
-            description = ['creating artifact'],
-            descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (('https://github.com/SFML/SFML.git' in step.build.getProperty('repository')) and (('windows' not in step.build.getProperty('buildername')) and ('freebsd' not in step.build.getProperty('buildername')))),
-            hideStepIf = True, # lambda results, step : results == SKIPPED,
-            command = Interpolate(
-                'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
-                'mkdir -p artifacts/by-branch/%(src::branch:-master)s && '
-                'cd %(prop:buildername)s/tmp && '
-                'tar czf %(prop:buildername)s.tar.gz %(prop:got_revision)s/ && '
-                'mv %(prop:buildername)s.tar.gz ../../artifacts/by-revision/%(prop:got_revision)s && '
-                'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s.tar.gz ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s.tar.gz && '
+                '%(prop:archive_command)s %(prop:buildername)s%(prop:artifact_extension)s %(prop:got_revision)s/ && '
+                'mv %(prop:buildername)s%(prop:artifact_extension)s ../../artifacts/by-revision/%(prop:got_revision)s && '
+                'ln -f ../../artifacts/by-revision/%(prop:got_revision)s/%(prop:buildername)s%(prop:artifact_extension)s ../../artifacts/by-branch/%(src::branch:-master)s/%(prop:buildername)s%(prop:artifact_extension)s && '
                 'chmod -R a+rX ../../artifacts/by-revision/%(prop:got_revision)s && '
                 'chmod -R a+rX ../../artifacts/by-branch/%(src::branch:-master)s'
             )
@@ -272,77 +211,67 @@ def get_build_factory():
             description = ['cleaning master'],
             descriptionDone = ['clean master'],
             alwaysRun = True,
-            hideStepIf = True,
+            hideStepIf = skipped_or_success,
             command = Interpolate(
                 'rm -rf "%(prop:buildername)s/tmp"'
             )
         )
     ]
 
-    factory = BuildFactory(steps)
-
-    return factory
-
-def get_static_analysis_build_factory():
-    from buildbot.steps.source.git import Git
-    from buildbot.process.properties import Interpolate
-    from buildbot.steps.shell import ShellCommand
-    from buildbot.steps.shell import Compile
+def get_clean_step():
     from buildbot.steps.slave import RemoveDirectory
-    from buildbot.process.factory import BuildFactory
+    from buildbot.process.properties import Interpolate
 
-    steps = [
-        Git(
-            description = ['cloning'],
-            descriptionDone = ['clone'],
-            repourl = Interpolate('%(prop:repository)s'),
-            mode = 'full',
-            shallow = True,
-            method = 'clobber',
-            retry = (1, 120),
-            progress = True,
-            env = {
-                'GIT_CURL_VERBOSE' : '1',
-                'GIT_TRACE' : '1'
-            },
-            logEnviron = False
-        ),
-        ShellCommand(
-            name = 'scan-build configure',
-            description = ['scan-build configuring'],
-            descriptionDone = ['scan-build configure'],
-            command = ['scan-build', 'cmake', '-G', 'Unix Makefiles', '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), '-DCMAKE_BUILD_TYPE=Debug', '-DBUILD_SHARED_LIBS=FALSE', '.'],
-            want_stdout = True,
-            want_stderr = True,
-            logEnviron = False
-        ),
-        Compile(
-            name = 'scan-build make',
-            description = ['scan-build building'],
-            descriptionDone = ['scan-build make'],
-            command = ['scan-build', 'make', '-j', Interpolate('%(prop:parallel)s')],
-            want_stdout = True,
-            want_stderr = True,
-            logEnviron = False
-        ),
-        Compile(
-            name = 'cppcheck',
-            description = ['cppcheck'],
-            descriptionDone = ['cppcheck'],
-            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
-            want_stdout = True,
-            want_stderr = True,
-            logEnviron = False
-        ),
+    return [
         RemoveDirectory(
-            name = 'clean',
+            name = 'clean slave',
             description = ['cleaning slave'],
             descriptionDone = ['clean slave'],
             dir = Interpolate('%(prop:workdir)s'),
             alwaysRun = True,
-            hideStepIf = True
+            hideStepIf = skipped_or_success
         )
     ]
+
+def get_build_factory(builder_name):
+    from buildbot.process.factory import BuildFactory
+    from buildbot.steps.shell import Compile
+
+    steps = []
+
+    steps.extend(get_env_step())
+
+    steps.extend(get_clone_step())
+
+    if('static-analysis' in builder_name):
+        steps.extend([
+            get_cmake_step('static', 'debug', ['scan-build']),
+            get_build_step('static', 'debug', ['scan-build'])
+        ])
+
+        steps.extend([
+            Compile(
+                name = 'cppcheck',
+                description = ['cppcheck'],
+                descriptionDone = ['cppcheck'],
+                command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
+                want_stdout = True,
+                want_stderr = True,
+                logEnviron = False
+            )
+        ])
+    else:
+        steps.extend(get_configuration_build_steps('dynamic', 'debug'))
+        steps.extend(get_configuration_build_steps('static', 'debug'))
+        steps.extend(get_configuration_build_steps('dynamic', 'release'))
+        steps.extend(get_configuration_build_steps('static', 'release'))
+
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['frameworks']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['oldSDK']))
+
+        steps.extend(get_artifact_step())
+
+    steps.extend(get_clean_step())
 
     factory = BuildFactory(steps)
 
