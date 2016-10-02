@@ -283,6 +283,77 @@ def get_build_factory():
 
     return factory
 
+def get_android_build_factory():
+    from buildbot.steps.slave import SetPropertiesFromEnv
+    from buildbot.process.factory import BuildFactory
+    from buildbot.process.properties import Interpolate
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.steps.source.git import Git
+    from buildbot.steps.slave import RemoveDirectory
+    from buildbot.steps.slave import MakeDirectory
+
+    # NOTE no install, no artefact
+    steps = [
+        SetPropertiesFromEnv(
+            variables = ['PATH'],
+            hideStepIf = True
+        ),
+        Git(
+            description = ['cloning'],
+            descriptionDone = ['clone'],
+            repourl = Interpolate('%(prop:repository)s'),
+            mode = 'full',
+            shallow = True,
+            method = 'clobber',
+            retry = (1, 120),
+            progress = True,
+            env = {
+                'GIT_CURL_VERBOSE' : '1',
+                'GIT_TRACE' : '1'
+            },
+            logEnviron = False
+        ),
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:workdir)s/build/build')
+        ),
+        ShellCommand(
+            name = 'cmake',
+            description = ['configuring'],
+            descriptionDone = ['configure'],
+            workdir = Interpolate('%(prop:workdir)s/build/build'),
+            command = [
+                'cmake',
+                '-G', 'Unix Makefiles',
+                '-DANDROID_STL=c++_shared',
+                '-DANDROID_ABI=armeabi-v7a',
+                Interpolate('-DCMAKE_TOOLCHAIN_FILE=%(prop:workdir)s/cmake/toolchains/android.toolchain.cmake'),
+                '..'
+            ],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        Compile(
+            description = ['building'],
+            descriptionDone = ['build'],
+            workdir = Interpolate('%(prop:workdir)s/build/build'),
+            command = [
+                Interpolate('%(prop:maker)s'),
+                '-j', Interpolate('%(prop:parallel)s')
+            ],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        )
+    ]
+
+    factory = BuildFactory(steps)
+
+    return factory
+
 def get_static_analysis_build_factory():
     from buildbot.steps.source.git import Git
     from buildbot.process.properties import Interpolate
