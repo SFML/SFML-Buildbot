@@ -57,7 +57,7 @@ def get_web():
     return html.WebStatus(
         http_port = "tcp:8010:interface=127.0.0.1",
         authz = authz_cfg,
-        change_hook_dialects = {'github' : {}},
+        change_hook_dialects = {'base': True, 'github' : {}},
         change_hook_auth = ['file:changehook.passwd']
     )
 
