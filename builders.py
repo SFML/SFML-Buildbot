@@ -53,6 +53,7 @@ def get_builders():
         make_builder('windows-gcc-610-mingw-32', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw32path, '', '', '', True),
         make_builder('windows-gcc-610-mingw-64', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw64path, '', '', '', True),
         make_builder('debian-gcc-64', ['master-debian-64', 'binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', True),
+        make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', True),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', False),
         make_builder('freebsd-gcc-64', ['zsbzsb-freebsd-64', 'binary1248-freebsd-64'], 'Unix Makefiles', 'make', '', '', '', '', False),
         make_builder('osx-clang-el-capitan', ['hiura-osx'], 'Unix Makefiles', 'make', '', '', '', '', True)

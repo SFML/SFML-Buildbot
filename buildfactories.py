@@ -51,6 +51,10 @@ def get_cmake_step(link, type, options = []):
         build_sdk += '-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.7.sdk'
         suffix.append('10.7')
 
+    if 'android' in options:
+        build_target += '-DANDROID_ABI=armeabi-v7a'
+        build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android.toolchain.cmake'
+
     configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..']
 
     if 'scan-build' in options:
@@ -61,7 +65,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
         command = configure_command,
@@ -69,7 +73,7 @@ def get_cmake_step(link, type, options = []):
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
             'LIB' : Interpolate('%(prop:vc_lib)s'),
-            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s')
         },
         want_stdout = True,
         want_stderr = True,
@@ -104,7 +108,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
         locks = [slave_cpu_lock.access('counting')],
@@ -113,7 +117,7 @@ def get_build_step(link, type, options = []):
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
             'LIB' : Interpolate('%(prop:vc_lib)s'),
-            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s')
         },
         want_stdout = True,
         want_stderr = True,
@@ -170,6 +174,63 @@ def get_configuration_build_steps(link, type, options = []):
             dir = Interpolate('%(prop:workdir)s/build/build'),
             doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
+        )
+    ]
+
+def get_android_patch_steps(string, replacement, file):
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.process.properties import Interpolate
+
+    return [
+        ShellCommand(
+            name = 'patch',
+            description = ['patching'],
+            descriptionDone = ['patch'],
+            hideStepIf = skipped_or_success,
+            workdir = Interpolate('%(prop:workdir)s/build'),
+            command = Interpolate('sed -i.bak s@' + string + '@' + replacement + '@g ' + file),
+            env = {
+                'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')
+            },
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        )
+    ]
+
+def get_android_example_build_steps(name, description, command):
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.process.properties import Interpolate
+
+    return [
+        ShellCommand(
+            name = name,
+            description = [description],
+            descriptionDone = [name],
+            workdir = Interpolate('%(prop:workdir)s/build/examples/android'),
+            command = Interpolate(command),
+            env = {
+                'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
+                'NDK_MODULE_PATH' : Interpolate('%(prop:workdir)s/install')
+            },
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        )
+    ]
+
+def get_cppcheck_steps():
+    from buildbot.steps.shell import Compile
+
+    return [
+        Compile(
+            name = 'cppcheck',
+            description = ['cppcheck'],
+            descriptionDone = ['cppcheck'],
+            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
         )
     ]
 
@@ -235,7 +296,6 @@ def get_clean_step():
 
 def get_build_factory(builder_name):
     from buildbot.process.factory import BuildFactory
-    from buildbot.steps.shell import Compile
 
     steps = []
 
@@ -249,17 +309,23 @@ def get_build_factory(builder_name):
             get_build_step('static', 'debug', ['scan-build'])
         ])
 
-        steps.extend([
-            Compile(
-                name = 'cppcheck',
-                description = ['cppcheck'],
-                descriptionDone = ['cppcheck'],
-                command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
-                want_stdout = True,
-                want_stderr = True,
-                logEnviron = False
-            )
-        ])
+        steps.extend(get_cppcheck_steps())
+    elif('android' in builder_name):
+        steps.extend(get_android_patch_steps('\${ANDROID_NDK}/sources', '%(prop:workdir)s/install', 'CMakeLists.txt'))
+        steps.extend(get_android_patch_steps('\${ANDROID_NDK}/sources', '%(prop:workdir)s/install', 'cmake/Config.cmake'))
+
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['android']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['android']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['android']))
+
+        steps.extend(get_android_example_build_steps('create example project', 'creating example project', 'android update project --target `android list target -c | tail -n 1` --path .'))
+        steps.extend(get_android_example_build_steps('ndk-build example project', 'ndk-building example project', 'ndk-build'))
+        steps.extend(get_android_example_build_steps('build debug example project', 'building debug example project', 'ant debug'))
+        steps.extend(get_android_example_build_steps('build release example project', 'building release example project', 'ant release'))
+        steps.extend(get_android_example_build_steps('archive example project', 'archiving example project', 'cp bin/*-debug.apk %(prop:workdir)s/install/. && cp bin/*-release-unsigned.apk %(prop:workdir)s/install/.'))
+
+        steps.extend(get_artifact_step())
     else:
         steps.extend(get_configuration_build_steps('dynamic', 'debug'))
         steps.extend(get_configuration_build_steps('static', 'debug'))
