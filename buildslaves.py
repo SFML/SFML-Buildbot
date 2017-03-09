@@ -15,6 +15,7 @@ def get_slaves():
         BuildSlave('tank-debian-64', '<password redacted>', properties = {'parallel' : 5}),
         BuildSlave('tank-ubuntu-64', '<password redacted>', properties = {'parallel' : 5}),
         BuildSlave('zsbzsb-freebsd-64', '<password redacted>', properties = {'parallel' : 1}),
-        BuildSlave('binary1248-debian-64', '<password redacted>', properties = {'parallel' : 13}),
-        BuildSlave('binary1248-freebsd-64', '<password redacted>', properties = {'parallel' : 1})
+        BuildSlave('binary1248-debian-64', '<password redacted>', properties = {'parallel' : 9}),
+        BuildSlave('binary1248-freebsd-64', '<password redacted>', properties = {'parallel' : 1}),
+        BuildSlave('binary1248-windows', '<password redacted>', properties = {'parallel' : 9})
     ]
