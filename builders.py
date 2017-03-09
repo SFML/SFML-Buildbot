@@ -1,5 +1,11 @@
 builder_names = []
 
+def slavePriority(builder, slaves):
+    for slave in slaves:
+        return slave
+
+    return None
+
 def get_builder_names():
     return builder_names
 
@@ -20,6 +26,7 @@ def make_builder(builder_name, slaves, generator, maker, toolchain_path, vc_incl
     return BuilderConfig(
         name = builder_name,
         slavenames = slaves,
+        nextSlave = slavePriority,
         locks = [],
         factory = buildfactories.get_build_factory(builder_name),
         properties = {
@@ -48,13 +55,13 @@ def get_builders():
         make_builder('windows-vc12-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', 'jom', paths.vc12x64path, paths.vc12x64include, paths.vc12x64lib, paths.vc12x64libpath, True),
         make_builder('windows-vc14-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', 'jom', paths.vc14x86path, paths.vc14x86include, paths.vc14x86lib, paths.vc14x86libpath, True),
         make_builder('windows-vc14-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', 'jom', paths.vc14x64path, paths.vc14x64include, paths.vc14x64lib, paths.vc14x64libpath, True),
-        make_builder('windows-gcc-492-tdm-32', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm32path, '', '', '', True),
-        make_builder('windows-gcc-492-tdm-64', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm64path, '', '', '', True),
-        make_builder('windows-gcc-630-mingw-32', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc630mingw32path, '', '', '', True),
-        make_builder('windows-gcc-630-mingw-64', ['master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc630mingw64path, '', '', '', True),
-        make_builder('debian-gcc-64', ['master-debian-64', 'binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', True),
+        make_builder('windows-gcc-492-tdm-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm32path, '', '', '', True),
+        make_builder('windows-gcc-492-tdm-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc492tdm64path, '', '', '', True),
+        make_builder('windows-gcc-630-mingw-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw32path, '', '', '', True),
+        make_builder('windows-gcc-630-mingw-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', 'mingw32-make', paths.gcc610mingw64path, '', '', '', True),
+        make_builder('debian-gcc-64', ['binary1248-debian-64', 'master-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', True),
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', True),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', 'make', '', '', '', '', False),
-        make_builder('freebsd-gcc-64', ['zsbzsb-freebsd-64', 'binary1248-freebsd-64'], 'Unix Makefiles', 'make', '', '', '', '', False),
+        make_builder('freebsd-gcc-64', ['binary1248-freebsd-64', 'zsbzsb-freebsd-64'], 'Unix Makefiles', 'make', '', '', '', '', False),
         make_builder('osx-clang-el-capitan', ['hiura-osx'], 'Unix Makefiles', 'make', '', '', '', '', True)
     ]
