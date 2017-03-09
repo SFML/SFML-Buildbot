@@ -5,9 +5,8 @@ slave_cpu_lock = locks.SlaveLock(
     maxCount = 1
 )
 
-slave_upload_lock = locks.SlaveLock(
-    'slave_upload_lock',
-    maxCount = 1
+master_upload_lock = locks.MasterLock(
+    'master_upload_lock'
 )
 
 def skipped_or_success(results, step):
@@ -251,8 +250,8 @@ def get_artifact_step():
             descriptionDone = ['upload'],
             slavesrc = Interpolate('%(prop:workdir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
-            compress = 'bz2',
-            locks = [slave_upload_lock.access('counting')],
+            compress = 'gz',
+            locks = [master_upload_lock.access('exclusive')],
             doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
             hideStepIf = skipped_or_success
         ),
