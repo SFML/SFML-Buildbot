@@ -50,10 +50,10 @@ def get_cmake_step(link, type, options = []):
         build_frameworks += '-DSFML_BUILD_FRAMEWORKS=FALSE'
         suffix = [link, type]
 
-    if 'oldSDK' in options:
-        build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.7'
-        build_sdk += '-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.7.sdk'
-        suffix.append('10.7')
+    if 'newSDK' in options:
+        build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.11'
+        # the SDK is set by CMake
+        suffix.append('10.11')
 
     if 'android' in options:
         build_target += '-DANDROID_ABI=armeabi-v7a'
@@ -96,8 +96,8 @@ def get_build_step(link, type, options = []):
     else:
         suffix = [link, type]
 
-    if 'oldSDK' in options:
-        suffix.append('10.7')
+    if 'newSDK' in options:
+        suffix.append('10.11')
         target = 'all'
 
     if 'scan-build' in options:
@@ -338,7 +338,7 @@ def get_build_factory(builder_name):
         steps.extend(get_configuration_build_steps('static', 'release'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'release', ['frameworks']))
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['oldSDK']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['newSDK']))
 
         steps.extend(get_artifact_step())
 
