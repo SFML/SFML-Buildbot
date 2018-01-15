@@ -59,6 +59,9 @@ def get_cmake_step(link, type, options = []):
         build_target += '-DANDROID_ABI=armeabi-v7a'
         build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android.toolchain.cmake'
 
+    if 'ios' in options:
+        build_sdk += '-DIOS=TRUE'
+
     configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..']
 
     if 'scan-build' in options:
@@ -69,7 +72,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
         command = configure_command,
@@ -103,16 +106,30 @@ def get_build_step(link, type, options = []):
     if 'scan-build' in options:
         target = 'all'
 
-    build_command = [Interpolate('%(prop:maker)s'), '-j', Interpolate('%(prop:parallel)s'), target]
+    build_command = 'cmake --build . --target ' + target
 
     if 'scan-build' in options:
-        build_command.insert(0, 'scan-build')
+        build_command = 'scan-build ' + build_command
+
+    if 'Makefiles' in [Interpolate('%(prop:generator)s')]:
+        build_command += [' -- -j' + Interpolate('%(prop:parallel)s')]
+    else:
+        # Not Makefiles, likely a multi-target generator (Xcode, VS, etc.)
+        # so we must specify buid config now
+        if type == 'debug':
+            build_command += ' --config Debug'
+        else:
+            build_command += ' --config Release'
+
+    # iOS build uses arch arm64
+    if 'ios' in options:
+        build_command += ' -- -arch arm64'
 
     return Compile(
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:workdir)s/build/build'),
         locks = [slave_cpu_lock.access('counting')],
@@ -331,6 +348,10 @@ def get_build_factory(builder_name):
         steps.extend(get_android_example_build_steps('archive example project', 'archiving example project', 'cp bin/*-debug.apk %(prop:workdir)s/install/. && cp bin/*-release-unsigned.apk %(prop:workdir)s/install/.'))
 
         steps.extend(get_artifact_step())
+    elif('ios' in builder_name):
+       # Only static on ios
+        steps.extend(get_configuration_build_steps('static', 'debug', ['ios']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['ios']))
     else:
         steps.extend(get_configuration_build_steps('dynamic', 'debug'))
         steps.extend(get_configuration_build_steps('static', 'debug'))
