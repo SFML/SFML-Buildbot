@@ -60,7 +60,7 @@ def get_cmake_step(link, type, options = []):
         build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android.toolchain.cmake'
 
     if 'ios' in options:
-        build_sdk += '-DIOS=TRUE'
+        build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake'
 
     configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..']
 
