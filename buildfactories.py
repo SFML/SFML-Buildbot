@@ -121,10 +121,6 @@ def get_build_step(link, type, options = []):
         else:
             build_command += ' --config Release'
 
-    # iOS build uses arch arm64
-    if 'ios' in options:
-        build_command += ' -- -arch arm64'
-
     return Compile(
         description = ['building'],
         descriptionSuffix = suffix,
