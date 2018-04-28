@@ -1,86 +1,3 @@
-vc11x86path = (
-    'C:/Dev/tools;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
-    'C:/Program Files (x86)/Microsoft SDKs/F#/3.0/Framework/v4.0/;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/IDE/;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/BIN;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/Tools;'
-    'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
-    'C:/Windows/Microsoft.NET/Framework/v3.5;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/VCPackages;'
-    'C:/Program Files (x86)/HTML Help Workshop;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Team Tools/Performance Tools;'
-    'C:/Program Files (x86)/Windows Kits/8.0/bin/x86;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v8.0A/bin/NETFX 4.0 Tools;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Bin/;'
-)
-
-vc11x86include = (
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/INCLUDE;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/INCLUDE;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/shared;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/um;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/winrt;'
-)
-
-vc11x86lib = (
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/LIB;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/LIB;'
-    'C:/Program Files (x86)/Windows Kits/8.0/lib/win8/um/x86;'
-)
-
-vc11x86libpath = (
-    'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
-    'C:/Windows/Microsoft.NET/Framework/v3.5;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/LIB;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/LIB;'
-    'C:/Program Files (x86)/Windows Kits/8.0/References/CommonConfiguration/Neutral;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v8.0/ExtensionSDKs/Microsoft.VCLibs/11.0/References/CommonConfiguration/neutral;'
-)
-
-vc11x64path = (
-    'C:/Dev/tools;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/BIN/amd64;'
-    'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
-    'C:/Windows/Microsoft.NET/Framework64/v3.5;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/VCPackages;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/IDE;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Common7/Tools;'
-    'C:/Program Files (x86)/HTML Help Workshop;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Team Tools/Performance Tools/x64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/Team Tools/Performance Tools;'
-    'C:/Program Files (x86)/Windows Kits/8.0/bin/x64;'
-    'C:/Program Files (x86)/Windows Kits/8.0/bin/x86;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v8.0A/bin/NETFX 4.0 Tools/x64;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Bin/x64;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v8.0A/bin/NETFX 4.0 Tools;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v7.0A/Bin/;'
-)
-
-vc11x64include = (
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/INCLUDE;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/INCLUDE;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/shared;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/um;'
-    'C:/Program Files (x86)/Windows Kits/8.0/include/winrt;'
-)
-
-vc11x64lib = (
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/LIB/amd64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/LIB/amd64;'
-    'C:/Program Files (x86)/Windows Kits/8.0/lib/win8/um/x64;'
-)
-
-vc11x64libpath = (
-    'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
-    'C:/Windows/Microsoft.NET/Framework64/v3.5;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/LIB/amd64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio 11.0/VC/ATLMFC/LIB/amd64;'
-    'C:/Program Files (x86)/Windows Kits/8.0/References/CommonConfiguration/Neutral;'
-    'C:/Program Files (x86)/Microsoft SDKs/Windows/v8.0/ExtensionSDKs/Microsoft.VCLibs/11.0/References/CommonConfiguration/neutral;'
-)
-
 vc12x86path = (
     'C:/Dev/tools;'
     'C:/Program Files (x86)/Microsoft Visual Studio 12.0/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
@@ -250,10 +167,110 @@ vc14x64libpath = (
     'C:/Program Files (x86)/Microsoft SDKs/Windows Kits/10/ExtensionSDKs/Microsoft.VCLibs/14.0/References/CommonConfiguration/neutral;'
 )
 
-gcc492tdm32path = 'C:/Dev/MinGW32-TDM492/bin/;'
+vc15x86path = (
+    'C:/Dev/tools;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/HostX86/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/VC/VCPackages;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/bin/Roslyn;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Team Tools/Performance Tools;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/;'
+    'C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.6.1 Tools/;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/bin;'
+    'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/Tools/;'
+    'C:/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/;'
+    'C:/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/;'
+    'C:/Program Files (x86)/HTML Help Workshop;'
+    'C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/;'
+)
 
-gcc492tdm64path = 'C:/Dev/MinGW64-TDM492/bin/;'
+vc15x86include = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/include;'
+    'C:/Program Files (x86)/WindowsKits/NETFXSDK/4.6.1/include/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/ucrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/shared;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/winrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/cppwinrt;'
+)
 
-gcc630mingw32path = 'C:/Dev/MinGW32-PosixDwarf630r1/bin/;'
+vc15x86lib = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86;'
+    'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/lib/um/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/ucrt/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/um/x86;'
+)
 
-gcc630mingw64path = 'C:/Dev/MinGW64-PosixSEH630r1/bin/;'
+vc15x86libpath = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86/store/references;'
+    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.16299.0;'
+    'C:/Program Files (x86)/Windows Kits/10/References/10.0.16299.0;'
+    'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
+)
+
+vc15x64path = (
+    'C:/Dev/tools;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/HostX64/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/VC/VCPackages;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/bin/Roslyn;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Team Tools/Performance Tools/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Team Tools/Performance Tools;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/;'
+    'C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.6.1 Tools/x64/;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise//MSBuild/15.0/bin;'
+    'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/Tools/;'
+    'C:/Program Files (x86)/Windows Kits/8.0/Windows Performance Toolkit/;'
+    'C:/Program Files (x86)/Windows Kits/8.1/Windows Performance Toolkit/;'
+    'C:/Program Files (x86)/HTMLHelp Workshop;'
+    'C:/Program Files (x86)/Windows Kits/10/Windows Performance Toolkit/;'
+)
+
+vc15x64include = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/include;'
+    'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/include/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/ucrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/shared;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/winrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/cppwinrt;'
+)
+
+vc15x64lib = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x64;'
+    'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/lib/um/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/ucrt/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/um/x64;'
+)
+
+vc15x64libpath = (
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools//MSVC/14.13.26128/ATLMFC/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86/store/referenc/es;'
+    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.16299.0;'
+    'C:/Program Files (x86)/Windows Kits/10/References/10.0.16299.0;'
+    'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
+)
+
+gcc510tdm32path = 'C:/Dev/MinGW32-TDM510/bin/;'
+
+gcc730mingw32path = 'C:/Dev/MinGW32-PosixDwarf730r0/bin/;'
+
+gcc730mingw64path = 'C:/Dev/MinGW64-PosixSEH730r0/bin/;'

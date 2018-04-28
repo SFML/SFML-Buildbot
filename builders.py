@@ -48,16 +48,15 @@ def get_builders():
     import paths
 
     return [
-        make_builder('windows-vc11-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc11x86path, paths.vc11x86include, paths.vc11x86lib, paths.vc11x86libpath, True),
-        make_builder('windows-vc11-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc11x64path, paths.vc11x64include, paths.vc11x64lib, paths.vc11x64libpath, True),
         make_builder('windows-vc12-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12x86path, paths.vc12x86include, paths.vc12x86lib, paths.vc12x86libpath, True),
         make_builder('windows-vc12-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12x64path, paths.vc12x64include, paths.vc12x64lib, paths.vc12x64libpath, True),
         make_builder('windows-vc14-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14x86path, paths.vc14x86include, paths.vc14x86lib, paths.vc14x86libpath, True),
         make_builder('windows-vc14-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14x64path, paths.vc14x64include, paths.vc14x64lib, paths.vc14x64libpath, True),
-        make_builder('windows-gcc-492-tdm-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc492tdm32path, '', '', '', True),
-        make_builder('windows-gcc-492-tdm-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc492tdm64path, '', '', '', True),
-        make_builder('windows-gcc-630-mingw-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc630mingw32path, '', '', '', True),
-        make_builder('windows-gcc-630-mingw-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc630mingw64path, '', '', '', True),
+        make_builder('windows-vc15-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15x86path, paths.vc15x86include, paths.vc15x86lib, paths.vc15x86libpath, True),
+        make_builder('windows-vc15-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15x64path, paths.vc15x64include, paths.vc15x64lib, paths.vc15x64libpath, True),
+        make_builder('windows-gcc-510-tdm-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc510tdm32path, '', '', '', True),
+        make_builder('windows-gcc-730-mingw-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw32path, '', '', '', True),
+        make_builder('windows-gcc-730-mingw-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw64path, '', '', '', True),
         make_builder('debian-gcc-64', ['binary1248-debian-64', 'master-debian-64'], 'Unix Makefiles', '', '', '', '', True),
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', '', '', True),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', '', '', False),
