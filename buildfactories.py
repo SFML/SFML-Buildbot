@@ -1,22 +1,11 @@
-from buildbot import locks
-
-slave_cpu_lock = locks.SlaveLock(
-    'slave_cpu_lock',
-    maxCount = 1
-)
-
-master_upload_lock = locks.MasterLock(
-    'master_upload_lock'
-)
-
 def skipped_or_success(results, step):
-    from buildbot.status.results import SKIPPED
-    from buildbot.status.results import SUCCESS
+    from buildbot.status.builder import SKIPPED
+    from buildbot.status.builder import SUCCESS
 
     return ((results == SKIPPED) or (results == SUCCESS))
 
 def skipped(results, step):
-    from buildbot.status.results import SKIPPED
+    from buildbot.status.builder import SKIPPED
 
     return (results == SKIPPED)
 
@@ -41,6 +30,12 @@ def get_cmake_step(link, type, options = []):
     build_frameworks = ''
     build_target = ''
     build_sdk = ''
+    build_ndk = ''
+    build_stl_type = ''
+    install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
+    frameworks_install_directory = Interpolate('')
+    misc_install_directory = Interpolate('')
+    ios_platform = ''
     suffix = ''
 
     if 'frameworks' in options:
@@ -56,13 +51,21 @@ def get_cmake_step(link, type, options = []):
         suffix.append('10.11')
 
     if 'android' in options:
-        build_target += '-DANDROID_ABI=armeabi-v7a'
-        build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/android.toolchain.cmake'
+        build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
+        build_sdk += '-DCMAKE_SYSTEM_NAME=Android'
+        build_ndk += '-DCMAKE_ANDROID_NDK=/usr/local/share/android-ndk'
+        build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
 
     if 'ios' in options:
         build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake'
+        ios_platform = '-DIOS_PLATFORM=SIMULATOR'
 
-    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:workdir)s/install'), Interpolate('-DCMAKE_INSTALL_FRAMEWORK_PREFIX=%(prop:workdir)s/install/Library/Frameworks'), build_type, shared_libs, build_frameworks, build_sdk, build_target, '..']
+    if 'osx' in options:
+        install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
+        frameworks_install_directory = Interpolate('-DSFML_DEPENDENCIES_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
+        misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
+
+    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
 
     if 'scan-build' in options:
         configure_command.insert(0, 'scan-build')
@@ -74,7 +77,7 @@ def get_cmake_step(link, type, options = []):
         descriptionDone = ['configure'],
         doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
-        workdir = Interpolate('%(prop:workdir)s/build/build'),
+        workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
@@ -108,22 +111,18 @@ def get_build_step(link, type, options = []):
 
     build_command = 'cmake --build . --target ' + target
 
-    if 'scan-build' in options:
-        build_command = 'scan-build ' + build_command
-
-    if 'Makefiles' in [Interpolate('%(prop:generator)s')]:
-        build_command += [' -- -j' + Interpolate('%(prop:parallel)s')]
+    # For multi-target generators (Xcode, VS, etc.) we must specify the build configuration
+    if type == 'debug':
+        build_command += ' --config Debug'
     else:
-        # Not Makefiles, likely a multi-target generator (Xcode, VS, etc.)
-        # so we must specify buid config now
-        if type == 'debug':
-            build_command += ' --config Debug'
-        else:
-            build_command += ' --config Release'
+        build_command += ' --config Release'
 
     # iOS build uses arch arm64
-    if 'ios' in options:
-        build_command += ' -- -arch arm64'
+    # if 'ios' in options:
+    #     build_command += ' -- -arch arm64'
+
+    if 'scan-build' in options:
+        build_command = 'scan-build ' + build_command
 
     return Compile(
         description = ['building'],
@@ -131,9 +130,8 @@ def get_build_step(link, type, options = []):
         descriptionDone = ['build'],
         doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
-        workdir = Interpolate('%(prop:workdir)s/build/build'),
-        locks = [slave_cpu_lock.access('counting')],
-        command = build_command,
+        workdir = Interpolate('%(prop:builddir)s/build/build'),
+        command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -j %(prop:parallel)s|)s', command = build_command),
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -146,12 +144,13 @@ def get_build_step(link, type, options = []):
     )
 
 def get_env_step():
-    from buildbot.steps.slave import SetPropertiesFromEnv
+    from buildbot.steps.worker import SetPropertiesFromEnv
 
     return [SetPropertiesFromEnv(variables = ['PATH'], hideStepIf = skipped_or_success)]
 
 def get_clone_step():
     from buildbot.steps.source.git import Git
+    from buildbot.steps.master import SetProperty
     from buildbot.process.properties import Interpolate
 
     return [
@@ -160,8 +159,9 @@ def get_clone_step():
             descriptionDone = ['clone'],
             repourl = Interpolate('%(prop:repository)s'),
             mode = 'full',
-            shallow = True,
+            shallow = 16,
             method = 'clobber',
+            getDescription = True,
             retry = (1, 120),
             progress = True,
             env = {
@@ -173,8 +173,8 @@ def get_clone_step():
     ]
 
 def get_configuration_build_steps(link, type, options = []):
-    from buildbot.steps.slave import RemoveDirectory
-    from buildbot.steps.slave import MakeDirectory
+    from buildbot.steps.worker import RemoveDirectory
+    from buildbot.steps.worker import MakeDirectory
     from buildbot.process.properties import Interpolate
 
     return [
@@ -182,7 +182,7 @@ def get_configuration_build_steps(link, type, options = []):
             name = 'create build directory',
             description = ['preparing build directory'],
             descriptionDone = ['create build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build'),
+            dir = Interpolate('%(prop:builddir)s/build/build'),
             doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
         ),
@@ -192,7 +192,7 @@ def get_configuration_build_steps(link, type, options = []):
             name = 'remove build directory',
             description = ['removing build directory'],
             descriptionDone = ['remove build directory'],
-            dir = Interpolate('%(prop:workdir)s/build/build'),
+            dir = Interpolate('%(prop:builddir)s/build/build'),
             doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
         )
@@ -208,7 +208,7 @@ def get_android_patch_steps(string, replacement, file):
             description = ['patching'],
             descriptionDone = ['patch'],
             hideStepIf = skipped_or_success,
-            workdir = Interpolate('%(prop:workdir)s/build'),
+            workdir = Interpolate('%(prop:builddir)s/build'),
             command = Interpolate('sed -i.bak s@' + string + '@' + replacement + '@g ' + file),
             env = {
                 'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')
@@ -228,11 +228,14 @@ def get_android_example_build_steps(name, description, command):
             name = name,
             description = [description],
             descriptionDone = [name],
-            workdir = Interpolate('%(prop:workdir)s/build/examples/android'),
+            workdir = Interpolate('%(prop:builddir)s/build/examples/android'),
             command = Interpolate(command),
             env = {
                 'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
-                'NDK_MODULE_PATH' : Interpolate('%(prop:workdir)s/install')
+                'NDK_MODULE_PATH' : Interpolate('%(prop:builddir)s/install'),
+                'JAVA_HOME' : '/usr/lib/jvm/java-8-oracle',
+                'ANDROID_HOME' : '/usr/local/share/android-sdk-linux',
+                'ANDROID_NDK_HOME' : '/usr/local/share/android-ndk'
             },
             want_stdout = True,
             want_stderr = True,
@@ -248,7 +251,7 @@ def get_cppcheck_steps():
             name = 'cppcheck',
             description = ['cppcheck'],
             descriptionDone = ['cppcheck'],
-            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noExplicitConstructor', '--suppress=variableHidingTypedef', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-I', 'include', '-I', 'src', 'src', 'examples'],
+            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noConstructor', '--suppress=noExplicitConstructor', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-DSFML_SYSTEM_API=', '-DSFML_NETWORK_API=', '-DSFML_AUDIO_API=', '-DSFML_WINDOW_API=', '-DSFML_GRAPHICS_API=', '-I', 'include', '-I', 'src', 'src', 'examples'],
             want_stdout = True,
             want_stderr = True,
             logEnviron = False
@@ -265,10 +268,9 @@ def get_artifact_step():
             description = ['uploading'],
             descriptionSuffix = ['artifact'],
             descriptionDone = ['upload'],
-            slavesrc = Interpolate('%(prop:workdir)s/install'),
+            workersrc = Interpolate('%(prop:builddir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
             compress = 'gz',
-            locks = [master_upload_lock.access('exclusive')],
             doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
             hideStepIf = skipped_or_success
         ),
@@ -302,7 +304,7 @@ def get_artifact_step():
     ]
 
 def get_clean_step():
-    from buildbot.steps.slave import RemoveDirectory
+    from buildbot.steps.worker import RemoveDirectory
     from buildbot.process.properties import Interpolate
 
     return [
@@ -310,7 +312,7 @@ def get_clean_step():
             name = 'clean slave',
             description = ['cleaning slave'],
             descriptionDone = ['clean slave'],
-            dir = Interpolate('%(prop:workdir)s'),
+            dir = Interpolate('%(prop:builddir)s'),
             alwaysRun = True,
             hideStepIf = skipped_or_success
         )
@@ -333,33 +335,46 @@ def get_build_factory(builder_name):
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):
-        steps.extend(get_android_patch_steps('\${ANDROID_NDK}/sources', '%(prop:workdir)s/install', 'CMakeLists.txt'))
-        steps.extend(get_android_patch_steps('\${ANDROID_NDK}/sources', '%(prop:workdir)s/install', 'cmake/Config.cmake'))
+        steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'CMakeLists.txt'))
+        steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'cmake/Config.cmake'))
+        steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'examples/android/app/src/main/jni/Android.mk'))
+        steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'src/SFML/Android.mk'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('static', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('dynamic', 'release', ['android']))
         steps.extend(get_configuration_build_steps('static', 'release', ['android']))
 
-        steps.extend(get_android_example_build_steps('create example project', 'creating example project', 'android update project --target `android list target -c | tail -n 1` --path .'))
-        steps.extend(get_android_example_build_steps('ndk-build example project', 'ndk-building example project', 'ndk-build'))
-        steps.extend(get_android_example_build_steps('build debug example project', 'building debug example project', 'ant debug'))
-        steps.extend(get_android_example_build_steps('build release example project', 'building release example project', 'ant release'))
-        steps.extend(get_android_example_build_steps('archive example project', 'archiving example project', 'cp bin/*-debug.apk %(prop:workdir)s/install/. && cp bin/*-release-unsigned.apk %(prop:workdir)s/install/.'))
+        #steps.extend(get_android_example_build_steps('create example project', 'creating example project', 'android update project --target `android list target -c | tail -n 1` --path .'))
+        #steps.extend(get_android_example_build_steps('ndk-build example project', 'ndk-building example project', 'ndk-build'))
+        #steps.extend(get_android_example_build_steps('build debug example project', 'building debug example project', 'ant debug'))
+        #steps.extend(get_android_example_build_steps('build release example project', 'building release example project', 'ant release'))
+        steps.extend(get_android_example_build_steps('build debug example project', 'building debug example project', 'gradle assembleDebug'))
+        steps.extend(get_android_example_build_steps('build release example project', 'building release example project', 'gradle assembleRelease'))
+        #steps.extend(get_android_example_build_steps('archive example project', 'archiving example project', 'cp bin/*-debug.apk %(prop:builddir)s/install/. && cp bin/*-release-unsigned.apk %(prop:builddir)s/install/.'))
+        steps.extend(get_android_example_build_steps('archive debug example project', 'archiving debug example project', 'cp app/build/outputs/apk/debug/*-debug.apk %(prop:builddir)s/install/.'))
+        steps.extend(get_android_example_build_steps('archive release example project', 'archiving release example project', 'cp app/build/outputs/apk/release/*-release-unsigned.apk %(prop:builddir)s/install/.'))
 
         steps.extend(get_artifact_step())
     elif('ios' in builder_name):
        # Only static on ios
         steps.extend(get_configuration_build_steps('static', 'debug', ['ios']))
         steps.extend(get_configuration_build_steps('static', 'release', ['ios']))
+    elif('osx' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['osx']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['osx']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['osx']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['osx']))
+
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['osx', 'frameworks']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['osx', 'newSDK']))
+
+        steps.extend(get_artifact_step())
     else:
         steps.extend(get_configuration_build_steps('dynamic', 'debug'))
         steps.extend(get_configuration_build_steps('static', 'debug'))
         steps.extend(get_configuration_build_steps('dynamic', 'release'))
         steps.extend(get_configuration_build_steps('static', 'release'))
-
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['frameworks']))
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['newSDK']))
 
         steps.extend(get_artifact_step())
 

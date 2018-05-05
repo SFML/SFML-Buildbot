@@ -1,21 +1,19 @@
-from buildbot.buildslave import BuildSlave
+from buildbot.worker import Worker
 
 def get_protocols():
-    return {'pb': {'port': <port number redacted>}}
+    import private
+
+    return {'pb': {'port': private.port}}
 
 def get_slaves():
+    import private
+
     return [
-        BuildSlave('unassigned', '<password redacted>', properties = {'parallel' : 0}),
-        BuildSlave('expl0it3r-windows', '<password redacted>', properties = {'parallel' : 1}),
-        BuildSlave('hiura-osx', '<password redacted>', properties = {'parallel' : 3}),
-        BuildSlave('master', '<password redacted>', properties = {'parallel' : 3}),
-        BuildSlave('master-debian-64', '<password redacted>', properties = {'parallel' : 3}),
-        BuildSlave('master-ubuntu-64', '<password redacted>', properties = {'parallel' : 3}),
-        BuildSlave('master-windows', '<password redacted>', properties = {'parallel' : 5}),
-        BuildSlave('tank-debian-64', '<password redacted>', properties = {'parallel' : 5}),
-        BuildSlave('tank-ubuntu-64', '<password redacted>', properties = {'parallel' : 5}),
-        BuildSlave('zsbzsb-freebsd-64', '<password redacted>', properties = {'parallel' : 1}),
-        BuildSlave('binary1248-debian-64', '<password redacted>', properties = {'parallel' : 9}),
-        BuildSlave('binary1248-freebsd-64', '<password redacted>', properties = {'parallel' : 1}),
-        BuildSlave('binary1248-windows', '<password redacted>', properties = {'parallel' : 9})
+        Worker('unassigned', private.slave_passwords['unassigned'], max_builds = 1, properties = {'parallel' : 0}),
+        Worker('expl0it3r-windows', private.slave_passwords['expl0it3r-windows'], properties = {'parallel' : 1}),
+        Worker('hiura-osx', private.slave_passwords['hiura-osx'], max_builds = 1, properties = {'parallel' : 3}),
+        Worker('master-windows', private.slave_passwords['master-windows'], max_builds = 1, properties = {'parallel' : 5}),
+        Worker('binary1248-debian-64', private.slave_passwords['binary1248-debian-64'], max_builds = 1, properties = {'parallel' : 5}),
+        Worker('binary1248-freebsd-64', private.slave_passwords['binary1248-freebsd-64'], max_builds = 1, properties = {'parallel' : 1}),
+        Worker('binary1248-windows', private.slave_passwords['binary1248-windows'], max_builds = 1, properties = {'parallel' : 5})
     ]

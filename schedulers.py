@@ -33,10 +33,16 @@ def get_schedulers() :
             name = 'force',
             reason = StringParameter(name = "reason", default = "manual build", size = 100),
             builderNames = builders.get_builder_names(),
-            branch = StringParameter(name = "branch", default = "master", size = 100),
-            revision = StringParameter(name = "revision", default = "", size = 100),
-            repository = StringParameter(name = "repository", default = "https://github.com/SFML/SFML.git", regex = r"^https://github.com/[\w-]*/[\w-]*\.git$", size = 100),
-            project = StringParameter(name = "project", default = "SFML", size = 100),
+            codebases = [
+                util.CodebaseParameter(
+                    "",
+                    label = "Codebase",
+                    branch = StringParameter(name = "branch", default = "master", size = 100),
+                    revision = StringParameter(name = "revision", default = "", size = 100),
+                    repository = StringParameter(name = "repository", default = "https://github.com/SFML/SFML.git", regex = r"^https://github.com/[\w-]*/[\w-]*\.git$", size = 100),
+                    project = StringParameter(name = "project", default = "SFML", size = 100),
+                )
+            ],
             properties = [
                 util.FixedParameter(name = "trigger", default = "force")
             ]
