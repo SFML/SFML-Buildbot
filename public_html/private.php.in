@@ -1,0 +1,7 @@
+<?php
+
+$organizationToken = "<token redacted>";
+$buildBotToken     = "<token redacted>";
+$url               = "<URL redacted>";
+
+?>

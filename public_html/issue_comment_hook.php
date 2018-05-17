@@ -3,10 +3,10 @@
 // https://github.com/KnpLabs/php-github-api
 require_once "php-github-api/vendor/autoload.php";
 
+include "private.php";
+
 function getMembers()
 {
-	$organizationToken = "<token redacted>";
-
 	$organizationClient = new \Github\Client();
 	$organizationClient->authenticate($organizationToken, null, \Github\Client::AUTH_HTTP_TOKEN);
 
@@ -29,8 +29,6 @@ function getMembers()
 
 function getBuildParameters($prId)
 {
-	$buildBotToken = "<token redacted>";
-
 	$buildBotClient = new \Github\Client();
 	$buildBotClient->authenticate($buildBotToken, null, \Github\Client::AUTH_HTTP_TOKEN);
 
@@ -88,8 +86,6 @@ function main()
 			$branch = $buildParameters["branch"];
 			$repository = $buildParameters["repository"];
 			$comment = "Starting build requested by $user for $branch on $repository.";
-
-			$url = "<URL redacted>";
 
 			$data = array(
 				"repository" => "https://github.com/$repository.git",
