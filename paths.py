@@ -169,7 +169,7 @@ vc14x64libpath = (
 
 vc15x86path = (
     'C:/Dev/tools;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/HostX86/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/bin/HostX86/x86;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/VC/VCPackages;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer;'
@@ -177,7 +177,7 @@ vc15x86path = (
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Team Tools/Performance Tools;'
     'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/;'
     'C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.6.1 Tools/;'
-    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17134.0/x86;'
     'C:/Program Files (x86)/Windows Kits/10/bin/x86;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/MSBuild/15.0/bin;'
     'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
@@ -190,36 +190,36 @@ vc15x86path = (
 )
 
 vc15x86include = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/include;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/include;'
     'C:/Program Files (x86)/WindowsKits/NETFXSDK/4.6.1/include/um;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/ucrt;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/shared;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/um;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/winrt;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/cppwinrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/ucrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/shared;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/winrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/cppwinrt;'
 )
 
 vc15x86lib = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x86;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x86;'
     'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/lib/um/x86;'
-    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/ucrt/x86;'
-    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/um/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/ucrt/x86;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/um/x86;'
 )
 
 vc15x86libpath = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x86;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86/store/references;'
-    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.16299.0;'
-    'C:/Program Files (x86)/Windows Kits/10/References/10.0.16299.0;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x86;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x86/store/references;'
+    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.17134.0;'
+    'C:/Program Files (x86)/Windows Kits/10/References/10.0.17134.0;'
     'C:/Windows/Microsoft.NET/Framework/v4.0.30319;'
 )
 
 vc15x64path = (
     'C:/Dev/tools;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/bin/HostX64/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/bin/HostX64/x64;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/VC/VCPackages;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TestWindow;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/Common7/IDE/CommonExtensions/Microsoft/TeamFoundation/Team Explorer;'
@@ -229,7 +229,7 @@ vc15x64path = (
     'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/x64;'
     'C:/Program Files (x86)/Microsoft Visual Studio/Shared/Common/VSPerfCollectionTools/;'
     'C:/Program Files (x86)/Microsoft SDKs/Windows/v10.0A/bin/NETFX 4.6.1 Tools/x64/;'
-    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/bin/10.0.17134.0/x64;'
     'C:/Program Files (x86)/Windows Kits/10/bin/x64;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise//MSBuild/15.0/bin;'
     'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
@@ -242,30 +242,30 @@ vc15x64path = (
 )
 
 vc15x64include = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/include;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/include;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/include;'
     'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/include/um;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/ucrt;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/shared;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/um;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/winrt;'
-    'C:/Program Files (x86)/Windows Kits/10/include/10.0.16299.0/cppwinrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/ucrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/shared;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/um;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/winrt;'
+    'C:/Program Files (x86)/Windows Kits/10/include/10.0.17134.0/cppwinrt;'
 )
 
 vc15x64lib = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/ATLMFC/lib/x64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.2642/ATLMFC/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.2642/lib/x64;'
     'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/lib/um/x64;'
-    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/ucrt/x64;'
-    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.16299.0/um/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/ucrt/x64;'
+    'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/um/x64;'
 )
 
 vc15x64libpath = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools//MSVC/14.13.26128/ATLMFC/lib/x64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.13.26128/lib/x86/store/referenc/es;'
-    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.16299.0;'
-    'C:/Program Files (x86)/Windows Kits/10/References/10.0.16299.0;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x86/store/referenc/es;'
+    'C:/Program Files (x86)/Windows Kits/10/UnionMetadata/10.0.17134.0;'
+    'C:/Program Files (x86)/Windows Kits/10/References/10.0.17134.0;'
     'C:/Windows/Microsoft.NET/Framework64/v4.0.30319;'
 )
 
