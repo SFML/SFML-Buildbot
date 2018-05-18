@@ -253,8 +253,8 @@ vc15x64include = (
 )
 
 vc15x64lib = (
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.2642/ATLMFC/lib/x64;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.2642/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/ATLMFC/lib/x64;'
+    'C:/Program Files (x86)/Microsoft Visual Studio/2017/Enterprise/VC/Tools/MSVC/14.14.26428/lib/x64;'
     'C:/Program Files (x86)/Windows Kits/NETFXSDK/4.6.1/lib/um/x64;'
     'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/ucrt/x64;'
     'C:/Program Files (x86)/Windows Kits/10/lib/10.0.17134.0/um/x64;'
