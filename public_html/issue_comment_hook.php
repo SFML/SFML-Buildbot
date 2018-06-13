@@ -7,6 +7,8 @@ include "private.php";
 
 function getMembers()
 {
+	global $organizationToken;
+
 	$organizationClient = new \Github\Client();
 	$organizationClient->authenticate($organizationToken, null, \Github\Client::AUTH_HTTP_TOKEN);
 
@@ -29,6 +31,8 @@ function getMembers()
 
 function getBuildParameters($prId)
 {
+	global $buildBotToken;
+
 	$buildBotClient = new \Github\Client();
 	$buildBotClient->authenticate($buildBotToken, null, \Github\Client::AUTH_HTTP_TOKEN);
 
@@ -74,6 +78,8 @@ function getBuildRequest($data)
 
 function main()
 {
+	global $url;
+
 	$request = getBuildRequest(json_decode(file_get_contents("php://input"), true));
 
 	if($request["id"] != 0)
