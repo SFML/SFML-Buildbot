@@ -148,6 +148,37 @@ def get_env_step():
 
     return [SetPropertiesFromEnv(variables = ['PATH'], hideStepIf = skipped_or_success)]
 
+def extract_vs_paths(rc, stdout, stderr):
+    toolchain_path = ''
+    vc_include = ''
+    vc_lib = ''
+    vc_libpath = ''
+
+    for var in stdout.strip().split('\n'):
+        var = var.split('=', 1)
+
+        if var[0].strip().upper() == 'PATH':
+            toolchain_path = var[1].strip()
+        elif var[0].strip().upper() == 'INCLUDE':
+            vc_include = var[1].strip()
+        elif var[0].strip().upper() == 'LIB':
+            vc_lib = var[1].strip()
+        elif var[0].strip().upper() == 'LIBPATH':
+            vc_libpath = var[1].strip()
+
+    return {
+        'toolchain_path' : toolchain_path,
+        'vc_include' : vc_include,
+        'vc_lib' : vc_lib,
+        'vc_libpath' : vc_libpath
+    }
+
+def get_vs_env_step():
+    from buildbot.steps.shell import SetPropertyFromCommand
+    from buildbot.process.properties import Interpolate
+
+    return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:vc_target)s > nul && set'), extract_fn = extract_vs_paths)]
+
 def get_clone_step():
     from buildbot.steps.source.git import Git
     from buildbot.steps.master import SetProperty
@@ -161,7 +192,9 @@ def get_clone_step():
             mode = 'full',
             shallow = 16,
             method = 'clobber',
-            getDescription = True,
+            getDescription = {
+                'tags' : True
+            },
             retry = (1, 120),
             progress = True,
             env = {
@@ -324,6 +357,9 @@ def get_build_factory(builder_name):
     steps = []
 
     steps.extend(get_env_step())
+
+    if('windows-vc' in builder_name):
+        steps.extend(get_vs_env_step())
 
     steps.extend(get_clone_step())
 

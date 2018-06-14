@@ -20,7 +20,7 @@ def workerPriority(builder, workers, requests):
 def get_builder_names():
     return builder_names
 
-def make_builder(builder_name, workers, generator, toolchain_path, vc_include, vc_lib, vc_libpath, artifact):
+def make_builder(builder_name, workers, generator, toolchain_path, vc_target, artifact):
     from buildbot.config import BuilderConfig
     import buildfactories
 
@@ -51,9 +51,7 @@ def make_builder(builder_name, workers, generator, toolchain_path, vc_include, v
             'generator' : generator,
             'makefile' : makefile,
             'toolchain_path' : toolchain_path,
-            'vc_include' : vc_include,
-            'vc_lib' : vc_lib,
-            'vc_libpath' : vc_libpath,
+            'vc_target' : vc_target,
             'artifact' : artifact,
             'artifact_extension' : artifact_extension,
             'archive_command' : archive_command
@@ -67,19 +65,19 @@ def get_builders():
     import paths
 
     return [
-        make_builder('windows-vc12-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12x86path, paths.vc12x86include, paths.vc12x86lib, paths.vc12x86libpath, True),
-        make_builder('windows-vc12-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12x64path, paths.vc12x64include, paths.vc12x64lib, paths.vc12x64libpath, True),
-        make_builder('windows-vc14-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14x86path, paths.vc14x86include, paths.vc14x86lib, paths.vc14x86libpath, True),
-        make_builder('windows-vc14-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14x64path, paths.vc14x64include, paths.vc14x64lib, paths.vc14x64libpath, True),
-        make_builder('windows-vc15-32', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15x86path, paths.vc15x86include, paths.vc15x86lib, paths.vc15x86libpath, True),
-        make_builder('windows-vc15-64', ['master-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15x64path, paths.vc15x64include, paths.vc15x64lib, paths.vc15x64libpath, True),
-        make_builder('windows-gcc-510-tdm-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc510tdm32path, '', '', '', True),
-        make_builder('windows-gcc-730-mingw-32', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw32path, '', '', '', True),
-        make_builder('windows-gcc-730-mingw-64', ['binary1248-windows', 'master-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw64path, '', '', '', True),
-        make_builder('debian-gcc-64', ['binary1248-debian-64'], 'Unix Makefiles', '', '', '', '', True),
-        make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', '', '', True),
-        make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', '', '', False),
-        make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', '', '', False),
-        make_builder('osx-clang-el-capitan', ['hiura-osx'], 'Unix Makefiles', '', '', '', '', True),
-        make_builder('ios-clang-el-capitan', ['hiura-osx'], 'Xcode', '', '', '', '', True)
+        make_builder('windows-vc12-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12path, 'x86', True),
+        make_builder('windows-vc12-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12path, 'amd64', True),
+        make_builder('windows-vc14-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14path, 'x86', True),
+        make_builder('windows-vc14-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14path, 'amd64', True),
+        make_builder('windows-vc15-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'x86', True),
+        make_builder('windows-vc15-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'amd64', True),
+        make_builder('windows-gcc-510-tdm-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc510tdm32path, '', True),
+        make_builder('windows-gcc-730-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw32path, '', True),
+        make_builder('windows-gcc-730-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw64path, '', True),
+        make_builder('debian-gcc-64', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True),
+        make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True),
+        make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False),
+        make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False),
+        make_builder('osx-clang-el-capitan', ['hiura-osx'], 'Unix Makefiles', '', '', True),
+        make_builder('ios-clang-el-capitan', ['hiura-osx'], 'Xcode', '', '', True)
     ]
