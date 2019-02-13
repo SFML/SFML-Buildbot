@@ -65,7 +65,7 @@ def get_cmake_step(link, type, options = []):
         frameworks_install_directory = Interpolate('-DSFML_DEPENDENCIES_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
 
-    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
+    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'), ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
 
     if 'scan-build' in options:
         configure_command.insert(0, 'scan-build')
