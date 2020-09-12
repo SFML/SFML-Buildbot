@@ -11,23 +11,7 @@ def get_schedulers() :
             name = 'default',
             reason = 'main repository source code modification',
             builderNames = builders.get_builder_names(),
-            treeStableTimer = 20,
-            change_filter = util.ChangeFilter(
-                repository_fn = lambda repository : bool('github.com/SFML/SFML' in repository)
-            ),
-            properties = {
-                'trigger' : 'internal'
-            }
-        ),
-        AnyBranchScheduler(
-            name = 'foreign',
-            builderNames = builders.get_builder_names(),
-            change_filter = util.ChangeFilter(
-                repository_fn = lambda repository : bool('github.com/SFML/SFML' not in repository)
-            ),
-            properties = {
-                'trigger' : 'external'
-            }
+            treeStableTimer = 20
         ),
         ForceScheduler(
             name = 'force',

@@ -304,14 +304,14 @@ def get_artifact_step():
             workersrc = Interpolate('%(prop:builddir)s/install'),
             masterdest = Interpolate('%(prop:buildername)s/tmp/%(prop:got_revision)s'),
             compress = 'gz',
-            doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
+            doStepIf = lambda step : (step.build.getProperty('artifact') and ('refs/pull/' not in step.build.getProperty('branch'))),
             hideStepIf = skipped_or_success
         ),
         MasterShellCommand(
             name = 'artifact',
             description = ['creating artifact'],
             descriptionDone = ['create artifact'],
-            doStepIf = lambda step : (step.build.getProperty('artifact') and ('external' not in step.build.getProperty('trigger'))),
+            doStepIf = lambda step : (step.build.getProperty('artifact') and ('refs/pull/' not in step.build.getProperty('branch'))),
             hideStepIf = skipped_or_success,
             command = Interpolate(
                 'mkdir -p artifacts/by-revision/%(prop:got_revision)s && '
