@@ -1,0 +1,62 @@
+FROM debian:stable-slim
+
+RUN mkdir -p /usr/share/man/man1 \
+    && apt-get update && apt-get install --no-install-recommends -y \
+    wget \
+    python3-pip \
+    python3-setuptools \
+    build-essential \
+    git \
+    cmake \
+    ninja-build \
+    clang-tools \
+    cppcheck \
+    gradle \
+    zip \
+    unzip \
+    libfreetype6-dev \
+    libx11-dev \
+    libxrandr-dev \
+    libgl1-mesa-dev \
+    libudev-dev \
+    libopenal-dev \
+    libflac-dev \
+    libogg-dev \
+    libvorbis-dev \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install buildbot-worker
+
+RUN wget https://download.java.net/openjdk/jdk10/ri/jdk-10_linux-x64_bin_ri.tar.gz \
+    && tar xzf jdk-10_linux-x64_bin_ri.tar.gz \
+    && rm jdk-10_linux-x64_bin_ri.tar.gz \
+    && mkdir -p /usr/local/share \
+    && mv jdk-10 /usr/local/share/jdk-10
+
+ENV PATH "/usr/local/share/jdk-10/bin:$PATH"
+ENV JAVA_HOME "/usr/local/share/jdk-10"
+ENV JAVA_OPTS "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee"
+
+RUN wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip \
+    && unzip sdk-tools-linux-4333796.zip \
+    && rm sdk-tools-linux-4333796.zip \
+    && mkdir -p /usr/local/share/android-sdk-linux \
+    && mv tools /usr/local/share/android-sdk-linux/tools
+
+ENV ANDROID_HOME "/usr/local/share/android-sdk-linux"
+ENV PATH "/usr/local/share/android-sdk-linux/platform-tools:/usr/local/share/android-sdk-linux/tools/bin:$PATH"
+
+RUN sdkmanager "platform-tools" "platforms;android-28"
+
+RUN wget https://dl.google.com/android/repository/android-ndk-r21d-linux-x86_64.zip \
+    && unzip android-ndk-r21d-linux-x86_64.zip \
+    && rm android-ndk-r21d-linux-x86_64.zip \
+    && mkdir -p /usr/local/share \
+    && mv android-ndk-r21d /usr/local/share/android-ndk
+
+ENV ANDROID_NDK_HOME "/usr/local/share/android-ndk"
+
+WORKDIR /home/buildbot
+
+ENTRYPOINT ["buildbot-worker", "start", "--nodaemon", "/home/buildbot"]
