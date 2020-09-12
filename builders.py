@@ -66,15 +66,14 @@ def get_builders():
     import paths
 
     return [
-        make_builder('windows-vc12-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12path, 'x86', True, True),
-        make_builder('windows-vc12-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc12path, 'amd64', True, True),
         make_builder('windows-vc14-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14path, 'x86', True, True),
         make_builder('windows-vc14-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc14path, 'amd64', True, True),
         make_builder('windows-vc15-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'x86', True, True),
         make_builder('windows-vc15-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'amd64', True, True),
-        make_builder('windows-gcc-510-tdm-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc510tdm32path, '', True, True),
-        make_builder('windows-gcc-730-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw32path, '', True, True),
-        make_builder('windows-gcc-730-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc730mingw64path, '', True, True),
+        make_builder('windows-vc16-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'x86', True, True),
+        make_builder('windows-vc16-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'amd64', True, True),
+        make_builder('windows-gcc-810-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc810mingw32path, '', True, True),
+        make_builder('windows-gcc-810-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc810mingw64path, '', True, True),
         make_builder('debian-gcc-64', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, True),
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False, False),
