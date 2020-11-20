@@ -78,6 +78,6 @@ def get_builders():
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False, False),
         make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True),
-        make_builder('osx-clang-el-capitan', ['hiura-osx'], 'Unix Makefiles', '', '', True, True),
-        make_builder('ios-clang-el-capitan', ['hiura-osx'], 'Xcode', '', '', True, False)
+        make_builder('osx-clang', ['macos'], 'Unix Makefiles', '', '', True, True),
+        make_builder('ios-clang', ['macos'], 'Xcode', '', '', True, False)
     ]

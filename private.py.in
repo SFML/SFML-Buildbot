@@ -5,7 +5,7 @@ port = <port redacted>
 slave_passwords = dict([
 	('unassigned',            '<password redacted>'),
 	('expl0it3r-windows',     '<password redacted>'),
-	('hiura-osx',             '<password redacted>'),
+	('macos',                 '<password redacted>'),
 	('master',                '<password redacted>'),
 	('master-debian-64',      '<password redacted>'),
 	('master-ubuntu-64',      '<password redacted>'),
