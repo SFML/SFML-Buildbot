@@ -3,19 +3,20 @@ import twisted.cred
 port = <port redacted>
 
 slave_passwords = dict([
-	('unassigned',            '<password redacted>'),
-	('expl0it3r-windows',     '<password redacted>'),
-	('macos',                 '<password redacted>'),
-	('master',                '<password redacted>'),
-	('master-debian-64',      '<password redacted>'),
-	('master-ubuntu-64',      '<password redacted>'),
-	('master-windows',        '<password redacted>'),
-	('tank-debian-64',        '<password redacted>'),
-	('tank-ubuntu-64',        '<password redacted>'),
-	('zsbzsb-freebsd-64',     '<password redacted>'),
-	('binary1248-debian-64',  '<password redacted>'),
-	('binary1248-freebsd-64', '<password redacted>'),
-	('binary1248-windows',    '<password redacted>')
+	('unassigned',               '<password redacted>'),
+	('expl0it3r-windows',        '<password redacted>'),
+	('expl0it3r-raspbian-armhf', '<password redacted>'),
+	('macos',                    '<password redacted>'),
+	('master',                   '<password redacted>'),
+	('master-debian-64',         '<password redacted>'),
+	('master-ubuntu-64',         '<password redacted>'),
+	('master-windows',           '<password redacted>'),
+	('tank-debian-64',           '<password redacted>'),
+	('tank-ubuntu-64',           '<password redacted>'),
+	('zsbzsb-freebsd-64',        '<password redacted>'),
+	('binary1248-debian-64',     '<password redacted>'),
+	('binary1248-freebsd-64',    '<password redacted>'),
+	('binary1248-windows',       '<password redacted>')
 ])
 
 github_client_id = '<client id redacted>'
