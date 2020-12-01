@@ -75,6 +75,7 @@ def get_builders():
         make_builder('windows-gcc-810-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc810mingw32path, '', True, True),
         make_builder('windows-gcc-810-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc810mingw64path, '', True, True),
         make_builder('debian-gcc-64', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, True),
+        make_builder('raspbian-gcc-armhf', ['expl0it3r-raspbian-armhf'], 'Unix Makefiles', '', '', True, True),
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False, False),
         make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True),
