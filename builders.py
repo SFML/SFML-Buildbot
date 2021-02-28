@@ -20,7 +20,7 @@ def workerPriority(builder, workers, requests):
 def get_builder_names():
     return builder_names
 
-def make_builder(builder_name, workers, generator, toolchain_path, vc_target, artifact, run_tests):
+def make_builder(builder_name, workers, generator, toolchain_path, architecture, artifact, run_tests):
     from buildbot.config import BuilderConfig
     import buildfactories
 
@@ -51,7 +51,7 @@ def make_builder(builder_name, workers, generator, toolchain_path, vc_target, ar
             'generator' : generator,
             'makefile' : makefile,
             'toolchain_path' : toolchain_path,
-            'vc_target' : vc_target,
+            'architecture' : architecture,
             'artifact' : artifact,
             'artifact_extension' : artifact_extension,
             'archive_command' : archive_command,
@@ -79,6 +79,7 @@ def get_builders():
         make_builder('android-armeabi-v7a-api13', ['binary1248-debian-64'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False, False),
         make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True),
-        make_builder('osx-clang', ['macos'], 'Unix Makefiles', '', '', True, True),
-        make_builder('ios-clang', ['macos'], 'Xcode', '', '', True, False)
+        make_builder('macos-clang-64', ['macos-64'], 'Unix Makefiles', '', 'x86_64', True, True),
+        make_builder('ios-clang-64', ['macos-64'], 'Xcode', '', '', True, False)
+        make_builder('macos-clang-arm64', ['macos-arm64'], 'Unix Makefiles', '', 'arm64', True, True),
     ]

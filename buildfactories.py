@@ -35,6 +35,7 @@ def get_cmake_step(link, type, options = []):
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = Interpolate('')
     misc_install_directory = Interpolate('')
+    macos_architecture = ''
     ios_platform = ''
     suffix = ''
 
@@ -60,12 +61,13 @@ def get_cmake_step(link, type, options = []):
         build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake'
         ios_platform = '-DIOS_PLATFORM=SIMULATOR'
 
-    if 'osx' in options:
+    if 'macos' in options:
         install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         frameworks_install_directory = Interpolate('-DSFML_DEPENDENCIES_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
+        macos_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)')
 
-    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'), ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
+    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'), macos_architecture, ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
 
     if 'scan-build' in options:
         configure_command.insert(0, 'scan-build')
@@ -75,7 +77,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -128,7 +130,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('osx' in step.build.getProperty('buildername'))) and (link != 'static' or not ('osx' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -j %(prop:parallel)s|)s', command = build_command),
@@ -177,7 +179,7 @@ def get_vs_env_step():
     from buildbot.steps.shell import SetPropertyFromCommand
     from buildbot.process.properties import Interpolate
 
-    return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:vc_target)s > nul && set'), extract_fn = extract_vs_paths)]
+    return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:architecture)s > nul && set'), extract_fn = extract_vs_paths)]
 
 def get_clone_step():
     from buildbot.steps.source.git import Git
@@ -216,7 +218,7 @@ def get_configuration_build_steps(link, type, options = []):
             description = ['preparing build directory'],
             descriptionDone = ['create build directory'],
             dir = Interpolate('%(prop:builddir)s/build/build'),
-            doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
+            doStepIf = lambda step : (bool(options) and ('macos' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
         ),
         get_cmake_step(link, type, options),
@@ -226,7 +228,7 @@ def get_configuration_build_steps(link, type, options = []):
             description = ['removing build directory'],
             descriptionDone = ['remove build directory'],
             dir = Interpolate('%(prop:builddir)s/build/build'),
-            doStepIf = lambda step : (bool(options) and ('osx' in step.build.getProperty('buildername'))),
+            doStepIf = lambda step : (bool(options) and ('macos' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
         )
     ]
@@ -396,14 +398,14 @@ def get_build_factory(builder_name):
        # Only static on ios
         steps.extend(get_configuration_build_steps('static', 'debug', ['ios']))
         steps.extend(get_configuration_build_steps('static', 'release', ['ios']))
-    elif('osx' in builder_name):
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['osx']))
-        steps.extend(get_configuration_build_steps('static', 'debug', ['osx']))
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['osx']))
-        steps.extend(get_configuration_build_steps('static', 'release', ['osx']))
+    elif('macos' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['macos']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['macos']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['macos']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['macos']))
 
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['osx', 'frameworks']))
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['osx', 'newSDK']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['macos', 'frameworks']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['macos', 'newSDK']))
 
         steps.extend(get_artifact_step())
     else:
