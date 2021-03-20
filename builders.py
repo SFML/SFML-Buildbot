@@ -80,6 +80,6 @@ def get_builders():
         make_builder('static-analysis', ['binary1248-debian-64'], 'Unix Makefiles', '', '', False, False),
         make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True),
         make_builder('macos-clang-64', ['macos-64'], 'Unix Makefiles', '', 'x86_64', True, True),
-        make_builder('ios-clang-64', ['macos-64'], 'Xcode', '', '', True, False)
+        make_builder('ios-clang-64', ['macos-64'], 'Xcode', '', '', True, False),
         make_builder('macos-clang-arm64', ['macos-arm64'], 'Unix Makefiles', '', 'arm64', True, True),
     ]
