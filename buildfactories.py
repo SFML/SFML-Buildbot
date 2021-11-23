@@ -54,7 +54,7 @@ def get_cmake_step(link, type, options = []):
     if 'android' in options:
         build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
         build_sdk += '-DCMAKE_SYSTEM_NAME=Android'
-        build_ndk += '-DCMAKE_ANDROID_NDK=/usr/local/share/android-ndk'
+        build_ndk += '-DCMAKE_ANDROID_NDK=/usr/local/share/android-sdk-linux/ndk/21.4.7075529'
         build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
 
     if 'ios' in options:
@@ -270,7 +270,7 @@ def get_android_example_build_steps(name, description, command):
                 'NDK_MODULE_PATH' : Interpolate('%(prop:builddir)s/install'),
                 'JAVA_HOME' : '/usr/lib/jvm/java-8-oracle',
                 'ANDROID_HOME' : '/usr/local/share/android-sdk-linux',
-                'ANDROID_NDK_HOME' : '/usr/local/share/android-ndk'
+                'ANDROID_NDK_HOME' : '/usr/local/share/android-sdk-linux/ndk/21.4.7075529'
             },
             want_stdout = True,
             want_stderr = True,
