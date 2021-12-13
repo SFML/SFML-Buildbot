@@ -31,7 +31,12 @@ def get_cmake_step(link, type, options = []):
     build_target = ''
     build_sdk = ''
     build_ndk = ''
+    build_ndk_toolchain_version = ''
     build_stl_type = ''
+    build_android_api = ''
+    build_stdlib = ''
+    build_c_compiler = ''
+    build_cxx_compiler = ''
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = Interpolate('')
     misc_install_directory = Interpolate('')
@@ -54,8 +59,10 @@ def get_cmake_step(link, type, options = []):
     if 'android' in options:
         build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
         build_sdk += '-DCMAKE_SYSTEM_NAME=Android'
-        build_ndk += '-DCMAKE_ANDROID_NDK=/usr/local/share/android-sdk-linux/ndk/21.4.7075529'
+        build_ndk = Interpolate('-DCMAKE_ANDROID_NDK=%(prop:ANDROID_NDK_HOME)s')
+        build_ndk_toolchain_version += '-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang'
         build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
+        build_android_api += '-DCMAKE_ANDROID_API=26'
 
     if 'ios' in options:
         build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake'
@@ -67,7 +74,31 @@ def get_cmake_step(link, type, options = []):
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
         macos_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
 
-    configure_command = ['cmake', '-G', Interpolate('%(prop:generator)s'), '-DSFML_BUILD_EXAMPLES=TRUE', Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'), macos_architecture, ios_platform, install_prefix, frameworks_install_directory, misc_install_directory, build_type, shared_libs, build_frameworks, build_sdk, build_ndk, build_stl_type, build_target, '..']
+    configure_command = [
+        'cmake',
+        '-G',
+        Interpolate('%(prop:generator)s'),
+        '-DSFML_BUILD_EXAMPLES=TRUE',
+        Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
+        macos_architecture,
+        ios_platform,
+        install_prefix,
+        frameworks_install_directory,
+        misc_install_directory,
+        build_type,
+        shared_libs,
+        build_frameworks,
+        build_sdk,
+        build_ndk,
+        build_ndk_toolchain_version,
+        build_stl_type,
+        build_android_api,
+        build_c_compiler,
+        build_cxx_compiler,
+        build_stdlib,
+        build_target,
+        '..'
+    ]
 
     if 'scan-build' in options:
         configure_command.insert(0, 'scan-build')
@@ -148,7 +179,7 @@ def get_build_step(link, type, options = []):
 def get_env_step():
     from buildbot.steps.worker import SetPropertiesFromEnv
 
-    return [SetPropertiesFromEnv(variables = ['PATH'], hideStepIf = skipped_or_success)]
+    return [SetPropertiesFromEnv(variables = ['PATH', "ANDROID_HOME", "ANDROID_NDK_HOME"], hideStepIf = skipped_or_success)]
 
 def extract_vs_paths(rc, stdout, stderr):
     toolchain_path = ''
@@ -267,10 +298,7 @@ def get_android_example_build_steps(name, description, command):
             command = Interpolate(command),
             env = {
                 'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
-                'NDK_MODULE_PATH' : Interpolate('%(prop:builddir)s/install'),
-                'JAVA_HOME' : '/usr/lib/jvm/java-8-oracle',
-                'ANDROID_HOME' : '/usr/local/share/android-sdk-linux',
-                'ANDROID_NDK_HOME' : '/usr/local/share/android-sdk-linux/ndk/21.4.7075529'
+                'NDK_MODULE_PATH' : Interpolate('%(prop:builddir)s/install')
             },
             want_stdout = True,
             want_stderr = True,
@@ -377,6 +405,8 @@ def get_build_factory(builder_name):
         steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'cmake/Config.cmake'))
         steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'examples/android/app/src/main/jni/Android.mk'))
         steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'src/SFML/Android.mk'))
+        steps.extend(get_android_patch_steps('gradle:3.0.0', 'gradle:7.0.0', 'examples/android/build.gradle'))
+        steps.extend(get_android_patch_steps('targetSdkVersion\ 19', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('static', 'debug', ['android']))

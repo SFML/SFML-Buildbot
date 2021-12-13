@@ -10,7 +10,8 @@ slave_passwords = dict([
 	('macos-arm64',              '<password redacted>'),
 	('binary1248-debian',        '<password redacted>'),
 	('binary1248-freebsd-64',    '<password redacted>'),
-	('binary1248-windows',       '<password redacted>')
+	('binary1248-windows',       '<password redacted>'),
+	('binary1248-android',       '<password redacted>')
 ])
 
 github_client_id = '<client id redacted>'
