@@ -8,7 +8,7 @@ slave_passwords = dict([
 	('expl0it3r-raspbian-armhf', '<password redacted>'),
 	('macos-64',                 '<password redacted>'),
 	('macos-arm64',              '<password redacted>'),
-	('binary1248-debian-64',     '<password redacted>'),
+	('binary1248-debian',        '<password redacted>'),
 	('binary1248-freebsd-64',    '<password redacted>'),
 	('binary1248-windows',       '<password redacted>')
 ])
