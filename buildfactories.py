@@ -74,6 +74,11 @@ def get_cmake_step(link, type, options = []):
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
         macos_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
 
+    if 'clang' in options:
+        build_c_compiler += '-DCMAKE_C_COMPILER=clang'
+        build_cxx_compiler += '-DCMAKE_CXX_COMPILER=clang++'
+        build_stdlib += '-DCMAKE_CXX_FLAGS="-stdlib=libc++"'
+
     configure_command = [
         'cmake',
         '-G',
@@ -108,7 +113,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -161,7 +166,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -j %(prop:parallel)s|)s', command = build_command),
@@ -436,6 +441,13 @@ def get_build_factory(builder_name):
 
         steps.extend(get_configuration_build_steps('dynamic', 'release', ['macos', 'frameworks']))
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['macos', 'newSDK']))
+
+        steps.extend(get_artifact_step())
+    elif('debian-clang' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['clang']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['clang']))
 
         steps.extend(get_artifact_step())
     else:
