@@ -312,6 +312,7 @@ def get_android_example_build_steps(name, description, command):
     ]
 
 def get_cppcheck_steps():
+    from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
 
     return [
@@ -319,7 +320,7 @@ def get_cppcheck_steps():
             name = 'cppcheck',
             description = ['cppcheck'],
             descriptionDone = ['cppcheck'],
-            command = ['cppcheck', '--std=c++03', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noConstructor', '--suppress=noExplicitConstructor', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-DSFML_SYSTEM_API=', '-DSFML_NETWORK_API=', '-DSFML_AUDIO_API=', '-DSFML_WINDOW_API=', '-DSFML_GRAPHICS_API=', '-I', 'include', '-I', 'src', 'src', 'examples'],
+            command = ['cppcheck', Interpolate('-j %(prop:parallel)s'), '--std=c++11', '--enable=all', '--inconclusive', '--suppress=unusedFunction', '--suppress=functionStatic', '--suppress=functionConst', '--suppress=noConstructor', '--suppress=noExplicitConstructor', '--suppress=missingInclude', '--force', '-q', '--template={file}:{line}: warning: ({severity}) {message}', '-DSFML_SYSTEM_API=', '-DSFML_NETWORK_API=', '-DSFML_AUDIO_API=', '-DSFML_WINDOW_API=', '-DSFML_GRAPHICS_API=', '-I', 'include', '-I', 'src', 'src', 'examples'],
             want_stdout = True,
             want_stderr = True,
             logEnviron = False
