@@ -109,7 +109,7 @@ def get_cmake_step(link, type, options = []):
         configure_command.insert(0, 'scan-build')
 
     return ShellCommand(
-        name = 'cmake',
+        name = 'configure (' + link + ' ' + type + ')',
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
@@ -163,6 +163,7 @@ def get_build_step(link, type, options = []):
         build_command = 'scan-build ' + build_command
 
     return Compile(
+        name = 'build (' + link + ' ' + type + ')',
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
