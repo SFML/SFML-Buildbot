@@ -169,7 +169,7 @@ def get_build_step(link, type, options = []):
         doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
-        command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -j %(prop:parallel)s|)s', command = build_command),
+        command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command),
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
