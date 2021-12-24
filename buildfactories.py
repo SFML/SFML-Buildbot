@@ -52,9 +52,9 @@ def get_cmake_step(link, type, options = []):
         suffix = [link, type]
 
     if 'newSDK' in options:
-        build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.12'
+        build_target += '-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15'
         # the SDK is set by CMake
-        suffix.append('10.12')
+        suffix.append('10.15')
 
     if 'android' in options:
         build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
@@ -141,7 +141,7 @@ def get_build_step(link, type, options = []):
         suffix = [link, type]
 
     if 'newSDK' in options:
-        suffix.append('10.12')
+        suffix.append('10.15')
         target = 'all'
 
     if 'scan-build' in options:
