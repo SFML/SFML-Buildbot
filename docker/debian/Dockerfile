@@ -24,6 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libopenal-dev \
     libflac-dev \
     libogg-dev \
+    libopus-dev \
     libvorbis-dev \
     python3-pip \
     python3-dev \
