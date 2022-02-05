@@ -1,8 +1,3 @@
-vc15path = (
-    'C:/Dev/tools;'
-    'C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Auxiliary/Build;'
-)
-
 vc16path = (
     'C:/Dev/tools;'
     'C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build;'

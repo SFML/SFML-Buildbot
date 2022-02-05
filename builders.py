@@ -66,8 +66,6 @@ def get_builders():
     import paths
 
     return [
-        make_builder('windows-vc15-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'x86', True, True),
-        make_builder('windows-vc15-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc15path, 'amd64', True, True),
         make_builder('windows-vc16-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'x86', True, True),
         make_builder('windows-vc16-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'amd64', True, True),
         make_builder('windows-vc17-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc17path, 'x86', True, True),
