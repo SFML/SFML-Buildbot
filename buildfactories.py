@@ -113,7 +113,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -144,7 +144,7 @@ def get_build_step(link, type, options = []):
         suffix.append('10.15')
         target = 'all'
 
-    if 'scan-build' in options:
+    if ('scan-build' in options) or ('coverity' in options):
         target = 'all'
 
     build_command = 'cmake --build . --target ' + target
@@ -162,12 +162,15 @@ def get_build_step(link, type, options = []):
     if 'scan-build' in options:
         build_command = 'scan-build ' + build_command
 
+    if 'coverity' in options:
+        build_command = 'cov-build --dir cov-int ' + build_command
+
     return Compile(
         name = 'build (' + link + ' ' + type + ')',
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command),
@@ -267,6 +270,48 @@ def get_configuration_build_steps(link, type, options = []):
             descriptionDone = ['remove build directory'],
             dir = Interpolate('%(prop:builddir)s/build/build'),
             doStepIf = lambda step : (bool(options) and ('macos' in step.build.getProperty('buildername'))),
+            hideStepIf = skipped_or_success
+        )
+    ]
+
+def get_coverity_steps(link, type):
+    from buildbot.steps.worker import RemoveDirectory
+    from buildbot.steps.worker import MakeDirectory
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.process.properties import Interpolate
+    import private
+
+    return [
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:builddir)s/build/build'),
+            hideStepIf = skipped_or_success
+        ),
+        get_cmake_step(link, type, ['coverity']),
+        get_build_step(link, type, ['coverity']),
+        ShellCommand(
+            name = 'coverity upload',
+            description = ['uploading to coverity'],
+            descriptionDone = ['upload to coverity'],
+            hideStepIf = skipped_or_success,
+            workdir = Interpolate('%(prop:builddir)s/build/build'),
+            command = Interpolate('cat cov-int/build-log.txt && tar czvf coverity-data.tgz cov-int && curl --form token=$COVERITY_TOKEN --form email=$COVERITY_EMAIL --form file=@coverity-data.tgz --form version="%(prop:got_revision)s" --form description="Push to master" https://scan.coverity.com/builds?project=SFML%%2FSFML'),
+            env = {
+                'COVERITY_TOKEN' : private.coverity_token,
+                'COVERITY_EMAIL' : private.coverity_email,
+                'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')
+            },
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:builddir)s/build/build'),
             hideStepIf = skipped_or_success
         )
     ]
@@ -401,11 +446,10 @@ def get_build_factory(builder_name):
 
     steps.extend(get_clone_step())
 
-    if('static-analysis' in builder_name):
-        steps.extend([
-            get_cmake_step('static', 'debug', ['scan-build']),
-            get_build_step('static', 'debug', ['scan-build'])
-        ])
+    if('coverity' in builder_name):
+        steps.extend(get_coverity_steps('static', 'debug'))
+    elif('static-analysis' in builder_name):
+        steps.extend(get_configuration_build_steps('static', 'debug', ['scan-build']))
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):

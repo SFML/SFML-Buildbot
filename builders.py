@@ -25,7 +25,9 @@ def make_builder(builder_name, workers, generator, toolchain_path, architecture,
     import buildfactories
 
     global builder_names
-    builder_names.append(builder_name)
+
+    if('coverity' not in builder_name):
+        builder_names.append(builder_name)
 
     makefile = ''
     artifact_extension = '.tar.gz'
@@ -77,6 +79,7 @@ def get_builders():
         make_builder('raspbian-gcc-armhf', ['expl0it3r-raspbian-armhf'], 'Unix Makefiles', '', '', True, True),
         make_builder('android-armeabi-v7a', ['binary1248-android'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian'], 'Unix Makefiles', '', '', False, False),
+        make_builder('coverity', ['binary1248-coverity'], 'Unix Makefiles', '', '', False, False),
         make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True),
         make_builder('macos-clang-64', ['macos-64'], 'Unix Makefiles', '', 'x86_64', True, True),
         make_builder('ios-clang-64', ['macos-64'], 'Xcode', '', '', True, False),

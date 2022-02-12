@@ -1,4 +1,5 @@
 def get_schedulers() :
+    from buildbot.schedulers.basic import SingleBranchScheduler
     from buildbot.schedulers.basic import AnyBranchScheduler
     from buildbot.schedulers.forcesched import ForceScheduler
     from buildbot.schedulers.forcesched import StringParameter
@@ -7,6 +8,13 @@ def get_schedulers() :
     import builders
 
     return [
+        SingleBranchScheduler(
+            name = 'master',
+            reason = 'main repository source code modification',
+            builderNames = ['coverity'],
+            treeStableTimer = 20,
+            change_filter=util.ChangeFilter(branch='master')
+        ),
         AnyBranchScheduler(
             name = 'default',
             reason = 'main repository source code modification',
