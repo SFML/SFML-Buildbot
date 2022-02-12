@@ -4,17 +4,24 @@ RUN DEBIAN_FRONTEND=noninteractive \
     ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
     && apt-get update && apt-get install --no-install-recommends -y \
     tzdata \
+    curl \
     wget \
     zip \
     unzip \
     git \
     cmake \
+    ninja-build \
     build-essential \
+    llvm \
     clang \
     libc++-dev \
     libc++abi-dev \
     clang-tools \
     cppcheck \
+    lcov \
+    gcovr \
+    valgrind \
+    afl++ \
     libfreetype6-dev \
     libx11-dev \
     libxrandr-dev \
@@ -28,10 +35,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libvorbis-dev \
     python3-pip \
     python3-dev \
+    && apt-get install --no-install-recommends -y libfuzzer-$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')-dev \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# cppclean
+RUN pip3 install 'cppclean' \
+    && rm -rf ~/.cache
 
 # Buildbot Worker
 RUN pip3 install 'buildbot-worker' \
