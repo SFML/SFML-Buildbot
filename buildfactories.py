@@ -227,6 +227,7 @@ def get_clone_step():
         Git(
             description = ['cloning'],
             descriptionDone = ['clone'],
+            hideStepIf = skipped_or_success,
             repourl = Interpolate('%(prop:repository)s'),
             mode = 'full',
             shallow = 16,
