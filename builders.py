@@ -77,6 +77,7 @@ def get_builders():
         make_builder('debian-gcc-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True),
         make_builder('debian-clang-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True),
         make_builder('raspbian-gcc-armhf', ['expl0it3r-raspbian-armhf'], 'Unix Makefiles', '', '', True, True),
+        make_builder('raspbian-gcc-armhf-drm', ['expl0it3r-raspbian-armhf'], 'Unix Makefiles', '', '', True, True),
         make_builder('android-armeabi-v7a', ['binary1248-android'], 'Unix Makefiles', '', '', True, False),
         make_builder('static-analysis', ['binary1248-debian'], 'Unix Makefiles', '', '', False, False),
         make_builder('coverity', ['binary1248-coverity'], 'Unix Makefiles', '', '', False, False),
