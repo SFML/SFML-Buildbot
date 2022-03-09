@@ -79,6 +79,9 @@ def get_cmake_step(link, type, options = []):
         build_cxx_compiler += '-DCMAKE_CXX_COMPILER=clang++'
         build_stdlib += '-DCMAKE_CXX_FLAGS="-stdlib=libc++"'
 
+    if 'drm' in options:
+        build_target += '-DSFML_USE_DRM'
+
     configure_command = [
         'cmake',
         '-G',
@@ -495,6 +498,13 @@ def get_build_factory(builder_name):
         steps.extend(get_configuration_build_steps('static', 'debug', ['clang']))
         steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang']))
         steps.extend(get_configuration_build_steps('static', 'release', ['clang']))
+
+        steps.extend(get_artifact_step())
+    elif('drm' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['drm']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['drm']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['drm']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['drm']))
 
         steps.extend(get_artifact_step())
     else:
