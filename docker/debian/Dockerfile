@@ -35,6 +35,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libvorbis-dev \
     python3-pip \
     python3-dev \
+    xorg-dev \
+    xvfb \
     && apt-get install --no-install-recommends -y libfuzzer-$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')-dev \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
