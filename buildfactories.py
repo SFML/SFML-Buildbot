@@ -460,8 +460,8 @@ def get_build_factory(builder_name):
         steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'cmake/Config.cmake'))
         steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'examples/android/app/src/main/jni/Android.mk'))
         steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'src/SFML/Android.mk'))
-        steps.extend(get_android_patch_steps('gradle:3.0.0', 'gradle:7.0.0', 'examples/android/build.gradle'))
-        steps.extend(get_android_patch_steps('targetSdkVersion\ 19', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
+        steps.extend(get_android_patch_steps('gradle\:[[:digit:]]\.[[:digit:]]\.[[:digit:]]', 'gradle:7.0.0', 'examples/android/build.gradle'))
+        steps.extend(get_android_patch_steps('targetSdkVersion\ [[:digit:]][[:digit:]]*', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('static', 'debug', ['android']))
