@@ -11,7 +11,7 @@ def get_slaves():
     return [
         Worker('unassigned', private.slave_passwords['unassigned'], max_builds = 1, properties = {'parallel' : 0}),
         Worker('expl0it3r-windows', private.slave_passwords['expl0it3r-windows'], max_builds = 1, properties = {'parallel' : 4}),
-        Worker('expl0it3r-raspbian-armhf', private.slave_passwords['expl0it3r-raspbian-armhf'], properties = {'parallel' : 3}),
+        Worker('expl0it3r-raspbian-armhf', private.slave_passwords['expl0it3r-raspbian-armhf'], max_builds = 1, properties = {'parallel' : 3}),
         Worker('macos-64', private.slave_passwords['macos-64'], max_builds = 1, properties = {'parallel' : 3}),
         Worker('macos-arm64', private.slave_passwords['macos-arm64'], max_builds = 1, properties = {'parallel' : 3}),
         Worker('binary1248-debian', private.slave_passwords['binary1248-debian'], max_builds = 1, properties = {'parallel' : 3}),

@@ -80,7 +80,7 @@ def get_cmake_step(link, type, options = []):
         build_stdlib += '-DCMAKE_CXX_FLAGS="-stdlib=libc++"'
 
     if 'drm' in options:
-        build_target += '-DSFML_USE_DRM'
+        build_target += '-DSFML_USE_DRM=TRUE'
 
     configure_command = [
         'cmake',
@@ -116,7 +116,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -173,7 +173,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command),
