@@ -135,8 +135,12 @@ def get_build_step(link, type, options = []):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
 
+    prefix = ''
     suffix = ''
     target = 'install'
+
+    if 'linux' in options:
+        prefix = 'xvfb-run -a '
 
     if 'frameworks' in options:
         suffix = [link, type, 'frameworks']
@@ -150,7 +154,7 @@ def get_build_step(link, type, options = []):
     if ('scan-build' in options) or ('coverity' in options):
         target = 'all'
 
-    build_command = 'cmake --build . --target ' + target
+    build_command = prefix + 'cmake --build . --target ' + target
 
     # For multi-target generators (Xcode, VS, etc.) we must specify the build configuration
     if type == 'debug':
