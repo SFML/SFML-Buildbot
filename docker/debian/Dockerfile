@@ -17,6 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libc++-dev \
     libc++abi-dev \
     clang-tools \
+    clang-tidy \
     cppcheck \
     lcov \
     gcovr \
@@ -35,20 +36,30 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libvorbis-dev \
     python3-pip \
     python3-dev \
+    python3-venv \
     xorg-dev \
+    x11vnc \
     xvfb \
+    fluxbox \
+    novnc \
     && apt-get install --no-install-recommends -y libfuzzer-$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')-dev \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# pipx
+RUN python3 -m pip install --break-system-packages pipx \
+    && rm -rf ~/.cache
+
+ENV PATH="$PATH:/root/.local/bin"
+
 # cppclean
-RUN pip3 install 'cppclean' \
+RUN pipx install 'cppclean' \
     && rm -rf ~/.cache
 
 # Buildbot Worker
-RUN pip3 install 'buildbot-worker' \
+RUN pipx install 'buildbot-worker' \
     && rm -rf ~/.cache
 
 # Test Build GCC
@@ -88,6 +99,10 @@ COPY --from=test-layer-gcc /verification-gcc.txt /verification-gcc.txt
 COPY --from=test-layer-clang /verification-clang.txt /verification-clang.txt
 
 RUN echo ' \n\
+Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
+fluxbox > /dev/null 2>&1 & \n\
+x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
+websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
 rm -rf $BUILDBOT_HOME \n\
 mkdir -p $BUILDBOT_HOME \n\
  \n\
@@ -106,5 +121,6 @@ ENV BUILDBOT_MASTER_HOST="masteraddress.invalid"
 ENV BUILDBOT_MASTER_PORT=9989
 ENV BUILDBOT_WORKER_NAME="buildbot-worker-name"
 ENV BUILDBOT_WORKER_PASSWORD="buildbot-worker-password"
+ENV DISPLAY=":99"
 
 CMD /start.sh

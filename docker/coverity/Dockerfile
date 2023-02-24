@@ -25,13 +25,25 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libvorbis-dev \
     python3-pip \
     python3-dev \
+    python3-venv \
+    xorg-dev \
+    x11vnc \
+    xvfb \
+    fluxbox \
+    novnc \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# pipx
+RUN python3 -m pip install pipx \
+    && rm -rf ~/.cache
+
+ENV PATH="$PATH:/root/.local/bin"
+
 # Buildbot Worker
-RUN pip3 install 'buildbot-worker' \
+RUN pipx install 'buildbot-worker' \
     && rm -rf ~/.cache
 
 # Test Build GCC
@@ -60,6 +72,10 @@ wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOK
 tar xzf coverity_tool.tgz || true \n\
 mv cov-analysis-* /usr/local/share/cov-analysis || true \n\
 rm -rf coverity_tool.tgz \n\
+Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
+fluxbox > /dev/null 2>&1 & \n\
+x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
+websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
 rm -rf $BUILDBOT_HOME \n\
 mkdir -p $BUILDBOT_HOME \n\
  \n\
@@ -80,5 +96,6 @@ ENV BUILDBOT_MASTER_PORT=9989
 ENV BUILDBOT_WORKER_NAME="buildbot-worker-name"
 ENV BUILDBOT_WORKER_PASSWORD="buildbot-worker-password"
 ENV COVERITY_TOKEN="invalid"
+ENV DISPLAY=":99"
 
 CMD /start.sh

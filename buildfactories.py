@@ -37,6 +37,8 @@ def get_cmake_step(link, type, options = []):
     build_stdlib = ''
     build_c_compiler = ''
     build_cxx_compiler = ''
+    run_display_tests = ''
+    exportcommands = ''
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = Interpolate('')
     misc_install_directory = Interpolate('')
@@ -74,13 +76,19 @@ def get_cmake_step(link, type, options = []):
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
         macos_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
 
-    if 'clang' in options:
+    if ('clang' in options) or ('clang-tidy' in options):
         build_c_compiler += '-DCMAKE_C_COMPILER=clang'
         build_cxx_compiler += '-DCMAKE_CXX_COMPILER=clang++'
         build_stdlib += '-DCMAKE_CXX_FLAGS="-stdlib=libc++"'
 
+    if 'clang-tidy' in options:
+        exportcommands += '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+
     if 'drm' in options:
         build_target += '-DSFML_USE_DRM=TRUE'
+
+    if 'displaytests' in options:
+        run_display_tests += '-DSFML_RUN_DISPLAY_TESTS=ON'
 
     configure_command = [
         'cmake',
@@ -105,18 +113,17 @@ def get_cmake_step(link, type, options = []):
         build_cxx_compiler,
         build_stdlib,
         build_target,
+        exportcommands,
+        run_display_tests,
         '..'
     ]
-
-    if 'scan-build' in options:
-        configure_command.insert(0, 'scan-build')
 
     return ShellCommand(
         name = 'configure (' + link + ' ' + type + ')',
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('clang-tidy' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or ('displaytests' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -147,8 +154,11 @@ def get_build_step(link, type, options = []):
         suffix.append('10.15')
         target = 'all'
 
-    if ('scan-build' in options) or ('coverity' in options):
+    if 'coverity' in options:
         target = 'all'
+
+    if 'clang-tidy' in options:
+        target = 'tidy'
 
     build_command = 'cmake --build . --target ' + target
 
@@ -162,9 +172,6 @@ def get_build_step(link, type, options = []):
     # if 'ios' in options:
     #     build_command += ' -- -arch arm64'
 
-    if 'scan-build' in options:
-        build_command = 'scan-build ' + build_command
-
     if 'coverity' in options:
         build_command = 'cov-build --dir cov-int ' + build_command
 
@@ -173,7 +180,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('scan-build' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : ('clang-tidy' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or ('displaytests' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command),
@@ -292,8 +299,8 @@ def get_coverity_steps(link, type):
             dir = Interpolate('%(prop:builddir)s/build/build'),
             hideStepIf = skipped_or_success
         ),
-        get_cmake_step(link, type, ['coverity']),
-        get_build_step(link, type, ['coverity']),
+        get_cmake_step(link, type, ['coverity', 'displaytests']),
+        get_build_step(link, type, ['coverity', 'displaytests']),
         ShellCommand(
             name = 'coverity upload',
             description = ['uploading to coverity'],
@@ -319,7 +326,7 @@ def get_coverity_steps(link, type):
         )
     ]
 
-def get_android_patch_steps(string, replacement, file):
+def get_patch_steps(string, replacement, file):
     from buildbot.steps.shell import ShellCommand
     from buildbot.process.properties import Interpolate
 
@@ -452,16 +459,17 @@ def get_build_factory(builder_name):
     if('coverity' in builder_name):
         steps.extend(get_coverity_steps('static', 'debug'))
     elif('static-analysis' in builder_name):
-        steps.extend(get_configuration_build_steps('static', 'debug', ['scan-build']))
+        steps.extend(get_patch_steps('-clang-tidy-binary', '-j\ %(prop:parallel)s\ -clang-tidy-binary', 'cmake/Tidy.cmake'))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy', 'displaytests']))
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):
-        steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'CMakeLists.txt'))
-        steps.extend(get_android_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'cmake/Config.cmake'))
-        steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'examples/android/app/src/main/jni/Android.mk'))
-        steps.extend(get_android_patch_steps('third_party/sfml', 'sfml', 'src/SFML/Android.mk'))
-        steps.extend(get_android_patch_steps('gradle\:[[:digit:]]\.[[:digit:]]\.[[:digit:]]', 'gradle:7.0.0', 'examples/android/build.gradle'))
-        steps.extend(get_android_patch_steps('targetSdkVersion\ [[:digit:]][[:digit:]]*', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
+        steps.extend(get_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'CMakeLists.txt'))
+        steps.extend(get_patch_steps('\${CMAKE_ANDROID_NDK}/sources/third_party', '%(prop:builddir)s/install', 'cmake/Config.cmake'))
+        steps.extend(get_patch_steps('third_party/sfml', 'sfml', 'examples/android/app/src/main/jni/Android.mk'))
+        steps.extend(get_patch_steps('third_party/sfml', 'sfml', 'src/SFML/Android.mk'))
+        steps.extend(get_patch_steps('gradle\:[[:digit:]]\.[[:digit:]]\.[[:digit:]]', 'gradle:7.0.0', 'examples/android/build.gradle'))
+        steps.extend(get_patch_steps('targetSdkVersion\ [[:digit:]][[:digit:]]*', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('static', 'debug', ['android']))
@@ -494,10 +502,17 @@ def get_build_factory(builder_name):
 
         steps.extend(get_artifact_step())
     elif('debian-clang' in builder_name):
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['clang']))
-        steps.extend(get_configuration_build_steps('static', 'debug', ['clang']))
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang']))
-        steps.extend(get_configuration_build_steps('static', 'release', ['clang']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['clang', 'displaytests']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang', 'displaytests']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang', 'displaytests']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['clang', 'displaytests']))
+
+        steps.extend(get_artifact_step())
+    elif('debian-gcc' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['displaytests']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['displaytests']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['displaytests']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['displaytests']))
 
         steps.extend(get_artifact_step())
     elif('drm' in builder_name):
@@ -505,6 +520,13 @@ def get_build_factory(builder_name):
         steps.extend(get_configuration_build_steps('static', 'debug', ['drm']))
         steps.extend(get_configuration_build_steps('dynamic', 'release', ['drm']))
         steps.extend(get_configuration_build_steps('static', 'release', ['drm']))
+
+        steps.extend(get_artifact_step())
+    elif('freebsd' in builder_name):
+        steps.extend(get_configuration_build_steps('dynamic', 'debug'))
+        steps.extend(get_configuration_build_steps('static', 'debug'))
+        steps.extend(get_configuration_build_steps('dynamic', 'release'))
+        steps.extend(get_configuration_build_steps('static', 'release'))
 
         steps.extend(get_artifact_step())
     else:
