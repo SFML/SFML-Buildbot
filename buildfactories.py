@@ -299,8 +299,8 @@ def get_coverity_steps(link, type):
             dir = Interpolate('%(prop:builddir)s/build/build'),
             hideStepIf = skipped_or_success
         ),
-        get_cmake_step(link, type, ['coverity', 'displaytests']),
-        get_build_step(link, type, ['coverity', 'displaytests']),
+        get_cmake_step(link, type, ['coverity']),
+        get_build_step(link, type, ['coverity']),
         ShellCommand(
             name = 'coverity upload',
             description = ['uploading to coverity'],
