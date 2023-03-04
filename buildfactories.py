@@ -231,7 +231,7 @@ def get_vs_env_step():
 
     return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:architecture)s > nul && set'), extract_fn = extract_vs_paths)]
 
-def get_clone_step():
+def get_shallow_clone_step():
     from buildbot.steps.source.git import Git
     from buildbot.steps.master import SetProperty
     from buildbot.process.properties import Interpolate
@@ -244,6 +244,32 @@ def get_clone_step():
             repourl = Interpolate('%(prop:repository)s'),
             mode = 'full',
             shallow = 16,
+            method = 'clobber',
+            getDescription = {
+                'tags' : True
+            },
+            retry = (1, 120),
+            progress = True,
+            env = {
+                'GIT_CURL_VERBOSE' : '1',
+                'GIT_TRACE' : '1'
+            },
+            logEnviron = False
+        )
+    ]
+
+def get_clone_step():
+    from buildbot.steps.source.git import Git
+    from buildbot.steps.master import SetProperty
+    from buildbot.process.properties import Interpolate
+
+    return [
+        Git(
+            description = ['cloning'],
+            descriptionDone = ['clone'],
+            hideStepIf = skipped_or_success,
+            repourl = Interpolate('%(prop:repository)s'),
+            mode = 'full',
             method = 'clobber',
             getDescription = {
                 'tags' : True
@@ -322,6 +348,68 @@ def get_coverity_steps(link, type):
             description = ['removing build directory'],
             descriptionDone = ['remove build directory'],
             dir = Interpolate('%(prop:builddir)s/build/build'),
+            hideStepIf = skipped_or_success
+        )
+    ]
+
+def get_sonar_steps():
+    from buildbot.steps.worker import RemoveDirectory
+    from buildbot.steps.worker import MakeDirectory
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.steps.shell import Compile
+    from buildbot.process.properties import Interpolate
+    import private
+
+    return [
+        MakeDirectory(
+            name = 'create build directory',
+            description = ['preparing build directory'],
+            descriptionDone = ['create build directory'],
+            dir = Interpolate('%(prop:builddir)s/build/build'),
+            hideStepIf = skipped_or_success
+        ),
+        ShellCommand(
+            name = 'configure',
+            description = ['configuring'],
+            descriptionDone = ['configure'],
+            workdir = Interpolate('%(prop:builddir)s/build'),
+            command = Interpolate('cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_EXAMPLES=TRUE -DSFML_BUILD_TEST_SUITE=ON -DSFML_RUN_DISPLAY_TESTS=ON -DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install'),
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        Compile(
+            name = 'build',
+            description = ['building'],
+            descriptionDone = ['build'],
+            workdir = Interpolate('%(prop:builddir)s/build'),
+            command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = 'build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/ --target all'),
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        ShellCommand(
+            name = 'sonar scanner',
+            description = ['running sonar scanner'],
+            descriptionDone = ['run sonar scanner'],
+            workdir = Interpolate('%(prop:builddir)s/build'),
+            command = Interpolate('sonar-scanner -Dsonar.organization=sfml -Dsonar.projectKey=SFML_SFML -Dsonar.sources=. -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.host.url=https://sonarcloud.io -Dsonar.cfamily.threads=%(prop:parallel)s'),
+            want_stdout = True,
+            want_stderr = True,
+            logEnviron = False
+        ),
+        RemoveDirectory(
+            name = 'remove build directory',
+            description = ['removing build directory'],
+            descriptionDone = ['remove build directory'],
+            dir = Interpolate('%(prop:builddir)s/build/build'),
+            hideStepIf = skipped_or_success
+        ),
+        RemoveDirectory(
+            name = 'remove bw-output directory',
+            description = ['removing bw-output directory'],
+            descriptionDone = ['remove bw-output directory'],
+            dir = Interpolate('%(prop:builddir)s/build/bw-output'),
             hideStepIf = skipped_or_success
         )
     ]
@@ -454,10 +542,13 @@ def get_build_factory(builder_name):
     if('windows-vc' in builder_name):
         steps.extend(get_vs_env_step())
 
-    steps.extend(get_clone_step())
+    if('coverity' not in builder_name):
+        steps.extend(get_shallow_clone_step())
 
     if('coverity' in builder_name):
+        steps.extend(get_clone_step())
         steps.extend(get_coverity_steps('static', 'debug'))
+        steps.extend(get_sonar_steps())
     elif('static-analysis' in builder_name):
         steps.extend(get_patch_steps('-clang-tidy-binary', '-j\ %(prop:parallel)s\ -clang-tidy-binary', 'cmake/Tidy.cmake'))
         steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy', 'displaytests']))

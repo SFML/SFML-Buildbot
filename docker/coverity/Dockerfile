@@ -73,6 +73,14 @@ wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOK
 tar xzf coverity_tool.tgz || true \n\
 mv cov-analysis-* /usr/local/share/cov-analysis || true \n\
 rm -rf coverity_tool.tgz \n\
+rm -rf /usr/local/share/sonar \n\
+curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip \n\
+unzip -o sonar-scanner.zip -d /usr/local/share/sonar/ \n\
+mv /usr/local/share/sonar/* /usr/local/share/sonar/sonar-scanner-linux \n\
+rm -rf sonar-scanner.zip \n\
+curl --create-dirs -sSLo build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip \n\
+unzip -o build-wrapper-linux-x86.zip -d /usr/local/share/sonar/ \n\
+rm -rf build-wrapper-linux-x86.zip \n\
 fluxbox > /dev/null 2>&1 & \n\
 x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
 websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
@@ -87,7 +95,7 @@ buildbot-worker start --nodaemon $BUILDBOT_HOME \n\
 ' > /start.sh \
     && chmod +x /start.sh
 
-ENV PATH "$PATH:/usr/local/share/cov-analysis/bin"
+ENV PATH "$PATH:/usr/local/share/cov-analysis/bin:/usr/local/share/sonar/sonar-scanner-linux/bin:/usr/local/share/sonar/build-wrapper-linux-x86"
 ENV BUILDBOT_HOME=/home/buildbot-worker
 ENV BUILDBOT_ADMIN="Your Name Here <admin@youraddress.invalid>"
 ENV BUILDBOT_DESCRIPTION="Please put a description of this build host here"
@@ -96,6 +104,9 @@ ENV BUILDBOT_MASTER_PORT=9989
 ENV BUILDBOT_WORKER_NAME="buildbot-worker-name"
 ENV BUILDBOT_WORKER_PASSWORD="buildbot-worker-password"
 ENV COVERITY_TOKEN="invalid"
+ENV SONAR_SCANNER_VERSION="4.7.0.2747"
+ENV SONAR_SCANNER_OPTS="-server"
+ENV SONAR_TOKEN="invalid"
 ENV DISPLAY=":99"
 
 CMD /start.sh
