@@ -67,12 +67,12 @@ FROM final-layer
 COPY --from=test-layer-gcc /verification-gcc.txt /verification-gcc.txt
 
 RUN echo ' \n\
+Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
 rm -rf /usr/local/share/cov-analysis \n\
 wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOKEN&project=SFML%2FSFML" -O coverity_tool.tgz || true \n\
 tar xzf coverity_tool.tgz || true \n\
 mv cov-analysis-* /usr/local/share/cov-analysis || true \n\
 rm -rf coverity_tool.tgz \n\
-Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
 fluxbox > /dev/null 2>&1 & \n\
 x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
 websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
