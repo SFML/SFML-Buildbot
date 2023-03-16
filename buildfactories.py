@@ -160,7 +160,10 @@ def get_build_step(link, type, options = []):
     if 'clang-tidy' in options:
         target = 'tidy'
 
-    build_command = 'cmake --build . --target ' + target
+    build_command = 'cmake --build .'
+
+    if 'coverity' in options:
+        build_command = 'cov-build --dir cov-int ' + build_command
 
     # For multi-target generators (Xcode, VS, etc.) we must specify the build configuration
     if type == 'debug':
@@ -168,12 +171,9 @@ def get_build_step(link, type, options = []):
     else:
         build_command += ' --config Release'
 
-    # iOS build uses arch arm64
-    # if 'ios' in options:
-    #     build_command += ' -- -arch arm64'
+    build_command += ' --target ' + target
 
-    if 'coverity' in options:
-        build_command = 'cov-build --dir cov-int ' + build_command
+    compile_command = Interpolate('%(kw:command)s %(prop:run_tests:#?|runtests|)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
 
     return Compile(
         name = 'build (' + link + ' ' + type + ')',
@@ -183,7 +183,7 @@ def get_build_step(link, type, options = []):
         doStepIf = lambda step : ('clang-tidy' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or ('displaytests' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
-        command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command),
+        command = compile_command,
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
