@@ -43,7 +43,6 @@ def get_cmake_step(link, type, options = [], flag = None):
     frameworks_install_directory = Interpolate('')
     misc_install_directory = Interpolate('')
     macos_architecture = Interpolate('')
-    ios_platform = ''
     suffix = ''
 
     if 'frameworks' in options:
@@ -67,8 +66,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         build_android_api += '-DCMAKE_ANDROID_API=26'
 
     if 'ios' in options:
-        build_sdk += '-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake'
-        ios_platform = '-DIOS_PLATFORM=SIMULATOR'
+        build_sdk += '-DCMAKE_SYSTEM_NAME=iOS'
 
     if 'macos' in options:
         install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
@@ -97,7 +95,6 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
         macos_architecture,
-        ios_platform,
         install_prefix,
         frameworks_install_directory,
         misc_install_directory,
