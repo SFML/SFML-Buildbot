@@ -29,7 +29,7 @@ def get_cmake_step(link, type, options = [], flag = None):
 
     build_frameworks = ''
     build_target = ''
-    build_sdk = ''
+    build_sdk = Interpolate('')
     build_ndk = ''
     build_ndk_toolchain_version = ''
     build_stl_type = ''
@@ -42,7 +42,9 @@ def get_cmake_step(link, type, options = [], flag = None):
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = Interpolate('')
     misc_install_directory = Interpolate('')
-    macos_architecture = Interpolate('')
+    osx_architecture = Interpolate('')
+    ios_platform = Interpolate('')
+    generator = Interpolate('%(prop:generator)s')
     suffix = ''
 
     if 'frameworks' in options:
@@ -59,20 +61,23 @@ def get_cmake_step(link, type, options = [], flag = None):
 
     if 'android' in options:
         build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
-        build_sdk += '-DCMAKE_SYSTEM_NAME=Android'
+        build_sdk = Interpolate('-DCMAKE_SYSTEM_NAME=Android')
         build_ndk = Interpolate('-DCMAKE_ANDROID_NDK=%(prop:ANDROID_NDK_HOME)s')
         build_ndk_toolchain_version += '-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang'
         build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
         build_android_api += '-DCMAKE_ANDROID_API=26'
 
     if 'ios' in options:
-        build_sdk += '-DCMAKE_SYSTEM_NAME=iOS'
+        build_sdk = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake|-DCMAKE_SYSTEM_NAME=iOS)s')
+        osx_architecture = Interpolate('%(prop:ios_toolchain_cmake_exists:#?||-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s)s')
+        ios_platform = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|-DIOS_PLATFORM=SIMULATOR|)s')
+        generator = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|Xcode|%(prop:generator)s)s')
 
     if 'macos' in options:
         install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         frameworks_install_directory = Interpolate('-DSFML_DEPENDENCIES_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
-        macos_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
+        osx_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
 
     if ('clang' in options) or ('clang-tidy' in options):
         build_c_compiler += '-DCMAKE_C_COMPILER=clang'
@@ -91,10 +96,11 @@ def get_cmake_step(link, type, options = [], flag = None):
     configure_command = [
         'cmake',
         '-G',
-        Interpolate('%(prop:generator)s'),
+        generator,
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
-        macos_architecture,
+        osx_architecture,
+        ios_platform,
         install_prefix,
         frameworks_install_directory,
         misc_install_directory,
@@ -595,6 +601,8 @@ def get_build_factory(builder_name):
 
         steps.extend(get_artifact_step())
     elif('ios' in builder_name):
+        steps.extend(check_file_exists('cmake/toolchains/iOS.toolchain.cmake', 'ios_toolchain_cmake_exists'))
+
        # Only static on ios
         steps.extend(get_configuration_build_steps('static', 'debug', ['ios']))
         steps.extend(get_configuration_build_steps('static', 'release', ['ios']))
