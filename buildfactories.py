@@ -9,7 +9,7 @@ def skipped(results, step):
 
     return (results == SKIPPED)
 
-def get_cmake_step(link, type, options = []):
+def get_cmake_step(link, type, options = [], flag = None):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import ShellCommand
 
@@ -123,7 +123,7 @@ def get_cmake_step(link, type, options = []):
         description = ['configuring'],
         descriptionSuffix = suffix,
         descriptionDone = ['configure'],
-        doStepIf = lambda step : ('clang-tidy' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or ('displaytests' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : (flag is None) or step.build.getProperty(flag),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = configure_command,
@@ -138,7 +138,7 @@ def get_cmake_step(link, type, options = []):
         logEnviron = False
     )
 
-def get_build_step(link, type, options = []):
+def get_build_step(link, type, options = [], flag = None):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
 
@@ -180,7 +180,7 @@ def get_build_step(link, type, options = []):
         description = ['building'],
         descriptionSuffix = suffix,
         descriptionDone = ['build'],
-        doStepIf = lambda step : ('clang-tidy' in options) or ('coverity' in options) or ('android' in options) or ('ios' in options) or ('clang' in options) or ('drm' in options) or ('displaytests' in options) or (((not options) or ('macos' in step.build.getProperty('buildername'))) and (link != 'static' or not ('macos' in step.build.getProperty('buildername')))),
+        doStepIf = lambda step : (flag is None) or step.build.getProperty(flag),
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = compile_command,
@@ -284,7 +284,7 @@ def get_clone_step():
         )
     ]
 
-def get_configuration_build_steps(link, type, options = []):
+def get_configuration_build_steps(link, type, options = [], flag = None):
     from buildbot.steps.worker import RemoveDirectory
     from buildbot.steps.worker import MakeDirectory
     from buildbot.process.properties import Interpolate
@@ -298,8 +298,8 @@ def get_configuration_build_steps(link, type, options = []):
             doStepIf = lambda step : (bool(options) and ('macos' in step.build.getProperty('buildername'))),
             hideStepIf = skipped_or_success
         ),
-        get_cmake_step(link, type, options),
-        get_build_step(link, type, options),
+        get_cmake_step(link, type, options, flag),
+        get_build_step(link, type, options, flag),
         RemoveDirectory(
             name = 'remove build directory',
             description = ['removing build directory'],
@@ -425,13 +425,29 @@ def get_patch_steps(string, replacement, file):
             descriptionDone = ['patch'],
             hideStepIf = skipped_or_success,
             workdir = Interpolate('%(prop:builddir)s/build'),
-            command = Interpolate('sed -i.bak s@' + string + '@' + replacement + '@g ' + file),
+            command = Interpolate('if [ -f "' + file + '" ]; then sed -i.bak s@' + string + '@' + replacement + '@g ' + file + '; fi'),
             env = {
                 'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')
             },
             want_stdout = True,
             want_stderr = True,
             logEnviron = False
+        )
+    ]
+
+def check_file_exists(file, propertyToSet):
+    from buildbot.steps.shell import SetPropertyFromCommand
+
+    def stdoutToBool(rc, stdout, stderr):
+        if '1' in stdout:
+             return {propertyToSet: True}
+        return {propertyToSet: False}
+
+    return [
+        SetPropertyFromCommand(
+            hideStepIf = skipped_or_success,
+            command='if [ -f ' + file + ' ]; then echo 1; else echo 0; fi',
+            extract_fn=stdoutToBool
         )
     ]
 
@@ -550,8 +566,11 @@ def get_build_factory(builder_name):
         steps.extend(get_coverity_steps('static', 'debug'))
         steps.extend(get_sonar_steps())
     elif('static-analysis' in builder_name):
+        steps.extend(check_file_exists('cmake/Tidy.cmake', 'clang_tidy_config_exists'))
+
         steps.extend(get_patch_steps('-clang-tidy-binary', '-j\ %(prop:parallel)s\ -clang-tidy-binary', 'cmake/Tidy.cmake'))
-        steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy', 'displaytests']))
+
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy', 'displaytests'], 'clang_tidy_config_exists'))
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):
