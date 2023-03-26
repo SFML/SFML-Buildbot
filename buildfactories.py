@@ -37,7 +37,6 @@ def get_cmake_step(link, type, options = [], flag = None):
     build_stdlib = ''
     build_c_compiler = ''
     build_cxx_compiler = ''
-    run_display_tests = ''
     exportcommands = ''
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = Interpolate('')
@@ -90,15 +89,13 @@ def get_cmake_step(link, type, options = [], flag = None):
     if 'drm' in options:
         build_target += '-DSFML_USE_DRM=TRUE'
 
-    if 'displaytests' in options:
-        run_display_tests += '-DSFML_RUN_DISPLAY_TESTS=ON'
-
     configure_command = [
         'cmake',
         '-G',
         generator,
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
+        Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
         osx_architecture,
         ios_platform,
         install_prefix,
@@ -117,7 +114,6 @@ def get_cmake_step(link, type, options = [], flag = None):
         build_stdlib,
         build_target,
         exportcommands,
-        run_display_tests,
         '..'
     ]
 
@@ -573,7 +569,7 @@ def get_build_factory(builder_name):
 
         steps.extend(get_patch_steps('-clang-tidy-binary', '-j\ %(prop:parallel)s\ -clang-tidy-binary', 'cmake/Tidy.cmake'))
 
-        steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy', 'displaytests'], 'clang_tidy_config_exists'))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang-tidy'], 'clang_tidy_config_exists'))
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):
@@ -617,17 +613,17 @@ def get_build_factory(builder_name):
 
         steps.extend(get_artifact_step())
     elif('debian-clang' in builder_name):
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['clang', 'displaytests']))
-        steps.extend(get_configuration_build_steps('static', 'debug', ['clang', 'displaytests']))
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang', 'displaytests']))
-        steps.extend(get_configuration_build_steps('static', 'release', ['clang', 'displaytests']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['clang']))
+        steps.extend(get_configuration_build_steps('static', 'debug', ['clang']))
+        steps.extend(get_configuration_build_steps('dynamic', 'release', ['clang']))
+        steps.extend(get_configuration_build_steps('static', 'release', ['clang']))
 
         steps.extend(get_artifact_step())
     elif('debian-gcc' in builder_name):
-        steps.extend(get_configuration_build_steps('dynamic', 'debug', ['displaytests']))
-        steps.extend(get_configuration_build_steps('static', 'debug', ['displaytests']))
-        steps.extend(get_configuration_build_steps('dynamic', 'release', ['displaytests']))
-        steps.extend(get_configuration_build_steps('static', 'release', ['displaytests']))
+        steps.extend(get_configuration_build_steps('dynamic', 'debug'))
+        steps.extend(get_configuration_build_steps('static', 'debug'))
+        steps.extend(get_configuration_build_steps('dynamic', 'release'))
+        steps.extend(get_configuration_build_steps('static', 'release'))
 
         steps.extend(get_artifact_step())
     elif('drm' in builder_name):
