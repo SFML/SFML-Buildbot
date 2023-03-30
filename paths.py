@@ -8,6 +8,6 @@ vc17path = (
     'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Auxiliary/Build;'
 )
 
-gcc1120mingw32path = 'C:/Dev/MinGW32-WinLibs-PosixDwarf1120r3/bin/;'
+gcc1220mingw32path = 'C:/Dev/MinGW32-WinLibs-PosixDwarf1220r4/bin/;'
 
-gcc1120mingw64path = 'C:/Dev/MinGW64-WinLibs-PosixSEH1120r3/bin/;'
+gcc1220mingw64path = 'C:/Dev/MinGW64-WinLibs-PosixSEH1220r4/bin/;'
