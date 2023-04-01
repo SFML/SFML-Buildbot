@@ -93,6 +93,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         'cmake',
         '-G',
         generator,
+        '-DCMAKE_VERBOSE_MAKEFILE=TRUE',
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
         Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
@@ -372,7 +373,7 @@ def get_sonar_steps():
             description = ['configuring'],
             descriptionDone = ['configure'],
             workdir = Interpolate('%(prop:builddir)s/build'),
-            command = Interpolate('cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_EXAMPLES=TRUE -DSFML_BUILD_TEST_SUITE=ON -DSFML_RUN_DISPLAY_TESTS=ON -DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install'),
+            command = Interpolate('cmake -S . -B build -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=FALSE -DSFML_BUILD_EXAMPLES=TRUE -DSFML_BUILD_TEST_SUITE=ON -DSFML_RUN_DISPLAY_TESTS=ON -DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install'),
             want_stdout = True,
             want_stderr = True,
             logEnviron = False
