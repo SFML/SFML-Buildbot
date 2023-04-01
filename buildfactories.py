@@ -29,7 +29,7 @@ def get_cmake_step(link, type, options = [], flag = None):
 
     build_frameworks = ''
     build_target = ''
-    build_sdk = Interpolate('')
+    build_sdk = ''
     build_ndk = ''
     build_ndk_toolchain_version = ''
     build_stl_type = ''
@@ -39,10 +39,10 @@ def get_cmake_step(link, type, options = [], flag = None):
     build_cxx_compiler = ''
     exportcommands = ''
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
-    frameworks_install_directory = Interpolate('')
-    misc_install_directory = Interpolate('')
-    osx_architecture = Interpolate('')
-    ios_platform = Interpolate('')
+    frameworks_install_directory = ''
+    misc_install_directory = ''
+    osx_architecture = ''
+    ios_platform = ''
     generator = Interpolate('%(prop:generator)s')
     suffix = ''
 
@@ -117,6 +117,8 @@ def get_cmake_step(link, type, options = [], flag = None):
         exportcommands,
         '..'
     ]
+
+    configure_command = list(filter(None, configure_command))
 
     return ShellCommand(
         name = 'configure (' + link + ' ' + type + ')',
