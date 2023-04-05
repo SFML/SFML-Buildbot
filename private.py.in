@@ -3,16 +3,17 @@ import twisted.cred
 port = <port redacted>
 
 slave_passwords = dict([
-	('unassigned',               '<password redacted>'),
-	('expl0it3r-windows',        '<password redacted>'),
-	('expl0it3r-raspbian-armhf', '<password redacted>'),
-	('macos-64',                 '<password redacted>'),
-	('macos-arm64',              '<password redacted>'),
-	('binary1248-debian',        '<password redacted>'),
-	('binary1248-freebsd-64',    '<password redacted>'),
-	('binary1248-windows',       '<password redacted>'),
-	('binary1248-android',       '<password redacted>'),
-	('binary1248-coverity',      '<password redacted>')
+	('unassigned',                '<password redacted>'),
+	('expl0it3r-windows',         '<password redacted>'),
+	('expl0it3r-raspbian-armhf',  '<password redacted>'),
+	('macos-64',                  '<password redacted>'),
+	('macos-arm64',               '<password redacted>'),
+	('binary1248-debian',         '<password redacted>'),
+	('binary1248-freebsd-64',     '<password redacted>'),
+	('binary1248-windows',        '<password redacted>'),
+	('binary1248-android',        '<password redacted>'),
+	('binary1248-coverity',       '<password redacted>'),
+	('binary1248-raspbian-armhf', '<password redacted>')
 ])
 
 github_client_id = '<client id redacted>'

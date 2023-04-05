@@ -18,5 +18,6 @@ def get_slaves():
         Worker('binary1248-freebsd-64', private.slave_passwords['binary1248-freebsd-64'], max_builds = 1, properties = {'parallel' : 1}),
         Worker('binary1248-windows', private.slave_passwords['binary1248-windows'], max_builds = 1, properties = {'parallel' : 8}),
         Worker('binary1248-android', private.slave_passwords['binary1248-android'], max_builds = 1, properties = {'parallel' : 1}),
-        Worker('binary1248-coverity', private.slave_passwords['binary1248-coverity'], max_builds = 1, properties = {'parallel' : 1})
+        Worker('binary1248-coverity', private.slave_passwords['binary1248-coverity'], max_builds = 1, properties = {'parallel' : 1}),
+        Worker('binary1248-raspbian-armhf', private.slave_passwords['binary1248-raspbian-armhf'], max_builds = 1, properties = {'parallel' : 3})
     ]
