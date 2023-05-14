@@ -94,6 +94,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-G',
         generator,
         '-DCMAKE_VERBOSE_MAKEFILE=TRUE',
+        '-DSFML_USE_MESA3D=TRUE',
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
         Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
@@ -190,7 +191,8 @@ def get_build_step(link, type, options = [], flag = None):
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
             'LIB' : Interpolate('%(prop:vc_lib)s'),
-            'LIBPATH' : Interpolate('%(prop:vc_libpath)s')
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'GALLIUM_DRIVER': 'llvmpipe'
         },
         want_stdout = True,
         want_stderr = True,
