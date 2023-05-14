@@ -8,6 +8,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     unzip \
     git \
     build-essential \
+    libssl-dev \
     python3-pip \
     python3-dev \
     default-jre \
@@ -17,9 +18,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 # CMake
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh \
-    && sh cmake-3.22.1-linux-x86_64.sh --skip-license --prefix=/usr/local \
-    && rm cmake-3.22.1-linux-x86_64.sh
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz \
+    && tar xzf cmake-3.26.3.tar.gz \
+    && cd cmake-3.26.3 \
+    && ./bootstrap --parallel=$(nproc) \
+    && make -j $(nproc) install \
+    && cmake --version \
+    && cd .. \
+    && rm -rf cmake-3.26.3*
 
 # Buildbot Worker
 RUN pip3 install 'buildbot-worker' \

@@ -9,7 +9,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
     zip \
     unzip \
     git \
-    cmake \
     ninja-build \
     build-essential \
     libfreetype6-dev \
@@ -23,6 +22,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libogg-dev \
     libopus-dev \
     libvorbis-dev \
+    libssl-dev \
     python3-pip \
     python3-dev \
     python3-venv \
@@ -35,6 +35,16 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# CMake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz \
+    && tar xzf cmake-3.26.3.tar.gz \
+    && cd cmake-3.26.3 \
+    && ./bootstrap --parallel=$(nproc) \
+    && make -j $(nproc) install \
+    && cmake --version \
+    && cd .. \
+    && rm -rf cmake-3.26.3*
 
 # pipx
 RUN python3 -m pip install pipx \
@@ -67,6 +77,8 @@ FROM final-layer
 COPY --from=test-layer-gcc /verification-gcc.txt /verification-gcc.txt
 
 RUN echo ' \n\
+rm -rf /tmp/.X11-unix/ \n\
+rm -rf /tmp/.X99-lock \n\
 Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
 rm -rf /usr/local/share/cov-analysis \n\
 wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOKEN&project=SFML%2FSFML" -O coverity_tool.tgz || true \n\

@@ -9,7 +9,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
     zip \
     unzip \
     git \
-    cmake \
     ninja-build \
     build-essential \
     llvm \
@@ -34,6 +33,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libogg-dev \
     libopus-dev \
     libvorbis-dev \
+    libssl-dev \
     python3-pip \
     python3-dev \
     python3-venv \
@@ -47,6 +47,16 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# CMake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz \
+    && tar xzf cmake-3.26.3.tar.gz \
+    && cd cmake-3.26.3 \
+    && ./bootstrap --parallel=$(nproc) \
+    && make -j $(nproc) install \
+    && cmake --version \
+    && cd .. \
+    && rm -rf cmake-3.26.3*
 
 # pipx
 RUN python3 -m pip install --break-system-packages pipx \
