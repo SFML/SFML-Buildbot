@@ -23,6 +23,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     valgrind \
     afl++ \
     libfreetype6-dev \
+    libgbm-dev \
     libx11-dev \
     libxrandr-dev \
     libxcursor-dev \
