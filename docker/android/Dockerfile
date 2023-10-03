@@ -11,6 +11,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libssl-dev \
     python3-pip \
     python3-dev \
+    python3-venv \
     default-jre \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
@@ -27,8 +28,14 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3
     && cd .. \
     && rm -rf cmake-3.26.3*
 
+# pipx
+RUN python3 -m pip install --break-system-packages pipx \
+    && rm -rf ~/.cache
+
+ENV PATH="/root/.local/bin:$PATH"
+
 # Buildbot Worker
-RUN pip3 install 'buildbot-worker' \
+RUN pipx install 'buildbot-worker' \
     && rm -rf ~/.cache
 
 # Gradle
@@ -37,10 +44,10 @@ RUN wget https://services.gradle.org/distributions/gradle-7.3.1-bin.zip \
     && mv gradle-7.3.1 /opt \
     && rm -rf gradle-*.zip
 
-ENV PATH "/opt/gradle-7.3.1/bin:$PATH"
+ENV PATH="/opt/gradle-7.3.1/bin:$PATH"
 
 # Android SDK/NDK
-ENV ANDROID_HOME "/opt/android-sdk"
+ENV ANDROID_HOME="/opt/android-sdk"
 
 RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip \
     && unzip commandlinetools-linux-7583922_latest.zip \
@@ -49,12 +56,12 @@ RUN wget https://dl.google.com/android/repository/commandlinetools-linux-7583922
     && rm -rf commandlinetools-linux* \
     && rm -rf ~/.android/cache
 
-ENV PATH "$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+ENV PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
 
 RUN echo "y" | sdkmanager --install "ndk;21.4.7075529" \
     && rm -rf ~/.android/cache
 
-ENV ANDROID_NDK_HOME "/opt/android-sdk/ndk/21.4.7075529"
+ENV ANDROID_NDK_HOME="/opt/android-sdk/ndk/21.4.7075529"
 
 # Test Build
 FROM final-layer as test-layer
