@@ -11,7 +11,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     git \
     ninja-build \
     build-essential \
-    libfreetype6-dev \
+    libfreetype-dev \
     libx11-dev \
     libxrandr-dev \
     libxcursor-dev \
@@ -47,7 +47,8 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3
     && rm -rf cmake-3.26.3*
 
 # pipx
-RUN python3 -m pip install pipx \
+RUN rm /usr/lib/python3.*/EXTERNALLY-MANAGED \
+    && python3 -m pip install pipx \
     && rm -rf ~/.cache
 
 ENV PATH="$PATH:/root/.local/bin"
@@ -96,25 +97,26 @@ rm -rf build-wrapper-linux-x86.zip \n\
 fluxbox > /dev/null 2>&1 & \n\
 x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
 websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
-rm -rf $BUILDBOT_HOME \n\
-mkdir -p $BUILDBOT_HOME \n\
+rm -rf $WORKERHOME \n\
+mkdir -p $WORKERHOME \n\
  \n\
-buildbot-worker create-worker $BUILDBOT_HOME $BUILDBOT_MASTER_HOST:$BUILDBOT_MASTER_PORT $BUILDBOT_WORKER_NAME $BUILDBOT_WORKER_PASSWORD \n\
-echo $BUILDBOT_ADMIN > $BUILDBOT_HOME/info/admin \n\
-echo $BUILDBOT_DESCRIPTION > $BUILDBOT_HOME/info/host \n\
+buildbot-worker create-worker $WORKERHOME $BUILDMASTER:$BUILDMASTER_PORT $WORKERNAME $WORKERPASS \n\
+echo $WORKERADMIN > $WORKERHOME/info/admin \n\
+echo $WORKERDESCRIPTION > $WORKERHOME/info/host \n\
  \n\
-buildbot-worker start --nodaemon $BUILDBOT_HOME \n\
+buildbot-worker start --nodaemon $WORKERHOME \n\
 ' > /start.sh \
     && chmod +x /start.sh
 
+ENV BUILDMASTER="masteraddress.invalid"
+ENV BUILDMASTER_PORT=9989
+ENV WORKERNAME="buildbot-worker-name"
+ENV WORKERPASS="buildbot-worker-password"
+ENV WORKERHOME=/home/buildbot-worker
+ENV WORKERADMIN="Your Name Here <admin@youraddress.invalid>"
+ENV WORKERDESCRIPTION="Please put a description of this build host here"
+
 ENV PATH "$PATH:/usr/local/share/cov-analysis/bin:/usr/local/share/sonar/sonar-scanner-linux/bin:/usr/local/share/sonar/build-wrapper-linux-x86"
-ENV BUILDBOT_HOME=/home/buildbot-worker
-ENV BUILDBOT_ADMIN="Your Name Here <admin@youraddress.invalid>"
-ENV BUILDBOT_DESCRIPTION="Please put a description of this build host here"
-ENV BUILDBOT_MASTER_HOST="masteraddress.invalid"
-ENV BUILDBOT_MASTER_PORT=9989
-ENV BUILDBOT_WORKER_NAME="buildbot-worker-name"
-ENV BUILDBOT_WORKER_PASSWORD="buildbot-worker-password"
 ENV COVERITY_TOKEN="invalid"
 ENV SONAR_SCANNER_VERSION="4.7.0.2747"
 ENV SONAR_SCANNER_OPTS="-server"
