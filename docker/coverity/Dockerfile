@@ -1,5 +1,8 @@
 FROM debian:stable-slim AS final-layer
 
+ARG COVERITY_TOKEN
+ARG SONAR_TOKEN
+
 RUN DEBIAN_FRONTEND=noninteractive \
     ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
     && apt-get update && apt-get install --no-install-recommends -y \
@@ -57,6 +60,29 @@ ENV PATH="$PATH:/root/.local/bin"
 RUN pipx install 'buildbot-worker' \
     && rm -rf ~/.cache
 
+ENV COVERITY_TOKEN=${COVERITY_TOKEN:-invalid}
+
+# Coverity
+RUN rm -rf /usr/local/share/cov-analysis \
+    && wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOKEN&project=SFML%2FSFML" -O coverity_tool.tgz \
+    && tar xzf coverity_tool.tgz \
+    && mv cov-analysis-* /usr/local/share/cov-analysis \
+    && rm -rf coverity_tool.tgz \
+    && rm -rf /usr/local/share/sonar
+
+ENV SONAR_TOKEN=${SONAR_TOKEN:-invalid}
+ENV SONAR_SCANNER_VERSION="4.7.0.2747"
+ENV SONAR_SCANNER_OPTS="-server"
+
+# Sonar
+RUN curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip \
+    && unzip -o sonar-scanner.zip -d /usr/local/share/sonar/ \
+    && mv /usr/local/share/sonar/* /usr/local/share/sonar/sonar-scanner-linux \
+    && rm -rf sonar-scanner.zip \
+    && curl --create-dirs -sSLo build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip \
+    && unzip -o build-wrapper-linux-x86.zip -d /usr/local/share/sonar/ \
+    && rm -rf build-wrapper-linux-x86.zip
+
 # Test Build GCC
 FROM final-layer as test-layer-gcc
 
@@ -81,19 +107,6 @@ RUN echo ' \n\
 rm -rf /tmp/.X11-unix/ \n\
 rm -rf /tmp/.X99-lock \n\
 Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
-rm -rf /usr/local/share/cov-analysis \n\
-wget https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_TOKEN&project=SFML%2FSFML" -O coverity_tool.tgz || true \n\
-tar xzf coverity_tool.tgz || true \n\
-mv cov-analysis-* /usr/local/share/cov-analysis || true \n\
-rm -rf coverity_tool.tgz \n\
-rm -rf /usr/local/share/sonar \n\
-curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip \n\
-unzip -o sonar-scanner.zip -d /usr/local/share/sonar/ \n\
-mv /usr/local/share/sonar/* /usr/local/share/sonar/sonar-scanner-linux \n\
-rm -rf sonar-scanner.zip \n\
-curl --create-dirs -sSLo build-wrapper-linux-x86.zip https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip \n\
-unzip -o build-wrapper-linux-x86.zip -d /usr/local/share/sonar/ \n\
-rm -rf build-wrapper-linux-x86.zip \n\
 fluxbox > /dev/null 2>&1 & \n\
 x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
 websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
@@ -117,10 +130,6 @@ ENV WORKERADMIN="Your Name Here <admin@youraddress.invalid>"
 ENV WORKERDESCRIPTION="Please put a description of this build host here"
 
 ENV PATH "$PATH:/usr/local/share/cov-analysis/bin:/usr/local/share/sonar/sonar-scanner-linux/bin:/usr/local/share/sonar/build-wrapper-linux-x86"
-ENV COVERITY_TOKEN="invalid"
-ENV SONAR_SCANNER_VERSION="4.7.0.2747"
-ENV SONAR_SCANNER_OPTS="-server"
-ENV SONAR_TOKEN="invalid"
 ENV DISPLAY=":99"
 
 CMD /start.sh

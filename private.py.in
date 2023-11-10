@@ -25,3 +25,5 @@ github_status_token = '<status token redacted>'
 coverity_token = '<coverity token redacted>'
 
 coverity_email = '<coverity email redacted>'
+
+sonar_token = '<sonar token redacted>'
