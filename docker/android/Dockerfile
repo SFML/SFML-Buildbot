@@ -7,6 +7,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     wget \
     unzip \
     git \
+    ninja-build \
     build-essential \
     libssl-dev \
     python3-pip \
