@@ -1,11 +1,11 @@
 def skipped_or_success(results, step):
-    from buildbot.status.builder import SKIPPED
-    from buildbot.status.builder import SUCCESS
+    from buildbot.process.results import SKIPPED
+    from buildbot.process.results import SUCCESS
 
     return ((results == SKIPPED) or (results == SUCCESS))
 
 def skipped(results, step):
-    from buildbot.status.builder import SKIPPED
+    from buildbot.process.results import SKIPPED
 
     return (results == SKIPPED)
 

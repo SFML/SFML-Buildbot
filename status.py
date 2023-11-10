@@ -6,9 +6,9 @@ def get_www():
     return dict(
         port = "unix:/home/buildbot/buildbot.sock",
         plugins = dict(
-            waterfall_view = {},
-            console_view = {},
-            grid_view = {},
+            waterfall_view = True,
+            console_view = True,
+            grid_view = True,
             badges = {}
         ),
         auth = util.GitHubAuth(
@@ -37,8 +37,6 @@ def get_github_status():
     return [
         reporters.GitHubStatusPush(
             token = private.github_status_token,
-            startDescription = Interpolate("Build #%(prop:buildnumber)s started."),
-            endDescription = Interpolate("Build #%(prop:buildnumber)s done."),
             context = Interpolate("%(prop:buildername)s"),
             verbose = True
         )
