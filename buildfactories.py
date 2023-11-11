@@ -585,7 +585,7 @@ def get_build_factory(builder_name):
         steps.extend(get_patch_steps('gradle\:[[:digit:]]\.[[:digit:]]\.[[:digit:]]', 'gradle:7.0.0', 'examples/android/build.gradle'))
         steps.extend(get_patch_steps('targetSdkVersion\ [[:digit:]][[:digit:]]*', 'targetSdkVersion\ 29', 'examples/android/app/build.gradle'))
         # New
-        steps.extend(get_patch_steps('version\ =\ \\"[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*\\"', 'version\ =\ \\"3.26.3\\"', 'examples/android/app/build.gradle.kts'))
+        # steps.extend(get_patch_steps('version\ =\ \\"[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*\.[[:digit:]][[:digit:]]*\\"', 'version\ =\ \\"3.26.3\\"', 'examples/android/app/build.gradle.kts'))
 
         steps.extend(get_configuration_build_steps('dynamic', 'debug', ['android']))
         steps.extend(get_configuration_build_steps('static', 'debug', ['android']))
