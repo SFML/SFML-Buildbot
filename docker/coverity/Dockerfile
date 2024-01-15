@@ -71,7 +71,7 @@ RUN rm -rf /usr/local/share/cov-analysis \
     && rm -rf /usr/local/share/sonar
 
 ENV SONAR_TOKEN=${SONAR_TOKEN:-invalid}
-ENV SONAR_SCANNER_VERSION="4.7.0.2747"
+ENV SONAR_SCANNER_VERSION="5.0.1.3006"
 ENV SONAR_SCANNER_OPTS="-server"
 
 # Sonar
