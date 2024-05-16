@@ -99,6 +99,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-DSFML_BUILD_EXAMPLES=TRUE',
         Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
         Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
+        Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:audio_device_tests)s'),
         osx_architecture,
         ios_platform,
         install_prefix,
@@ -440,6 +441,22 @@ def get_patch_steps(string, replacement, file):
         )
     ]
 
+def get_disable_sound_steps():
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.process.properties import Interpolate
+
+    return [
+        ShellCommand(
+            name = 'disable sound',
+            description = ['disabling sound'],
+            descriptionDone = ['disable sound'],
+            doStepIf = lambda step : (step.build.getProperty('miniaudio_exists') is not None),
+            hideStepIf = skipped_or_success,
+            command = Interpolate('rm -vf /usr/lib/x86_64-linux-gnu/libasound.so* && rm -vf /usr/lib/x86_64-linux-gnu/libpulse.so* && rm -vf /usr/lib/x86_64-linux-gnu/libjack.so* && rm -vf /usr/lib/x86_64-linux-gnu/libsndio.so* && rm -vf /usr/lib/x86_64-linux-gnu/libaaudio.so* && rm -vf /usr/lib/x86_64-linux-gnu/libOpenSLES.so'),
+            logEnviron = False
+        )
+    ]
+
 def check_file_exists(file, propertyToSet):
     from buildbot.steps.shell import SetPropertyFromCommand
 
@@ -567,6 +584,10 @@ def get_build_factory(builder_name):
 
     if('coverity' not in builder_name):
         steps.extend(get_shallow_clone_step())
+
+    if('debian' in builder_name):
+        steps.extend(check_file_exists('extlibs/headers/miniaudio/miniaudio.h', 'miniaudio_exists'))
+        steps.extend(get_disable_sound_steps())
 
     if('coverity' in builder_name):
         steps.extend(get_clone_step())

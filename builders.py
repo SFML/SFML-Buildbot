@@ -20,7 +20,7 @@ def workerPriority(builder, workers, requests):
 def get_builder_names():
     return builder_names
 
-def make_builder(builder_name, workers, generator, toolchain_path, architecture, artifact, run_tests, display_tests):
+def make_builder(builder_name, workers, generator, toolchain_path, architecture, artifact, run_tests, display_tests, audio_device_tests):
     from buildbot.config import BuilderConfig
     import buildfactories
 
@@ -58,7 +58,8 @@ def make_builder(builder_name, workers, generator, toolchain_path, architecture,
             'artifact_extension' : artifact_extension,
             'archive_command' : archive_command,
             'run_tests': run_tests,
-            'display_tests': display_tests
+            'display_tests': display_tests,
+            'audio_device_tests': audio_device_tests
         }
     )
 
@@ -69,21 +70,21 @@ def get_builders():
     import paths
 
     return [
-        make_builder('windows-vc16-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'x86', True, True, True),
-        make_builder('windows-vc16-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'amd64', True, True, True),
-        make_builder('windows-vc17-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc17path, 'x86', True, True, True),
-        make_builder('windows-vc17-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc17path, 'amd64', True, True, True),
-        make_builder('windows-gcc-1220-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc1220mingw32path, '', True, True, True),
-        make_builder('windows-gcc-1220-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc1220mingw64path, '', True, True, True),
-        make_builder('debian-gcc-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True, True),
-        make_builder('debian-clang-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True, True),
-        make_builder('raspbian-gcc-armhf', ['expl0it3r-raspbian-armhf', 'binary1248-raspbian-armhf'], 'Unix Makefiles', '', '', True, True, False),
-        make_builder('raspbian-gcc-armhf-drm', ['expl0it3r-raspbian-armhf', 'binary1248-raspbian-armhf'], 'Unix Makefiles', '', '', True, True, False),
-        make_builder('android-armeabi-v7a', ['binary1248-android'], 'Unix Makefiles', '', '', True, False, False),
-        make_builder('static-analysis', ['binary1248-debian'], 'Unix Makefiles', '', '', False, True, True),
-        make_builder('coverity', ['binary1248-coverity'], 'Unix Makefiles', '', '', False, False, False),
-        make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True, False),
-        make_builder('macos-clang-64', ['macos-64'], 'Unix Makefiles', '', 'x86_64', True, True, True),
-        make_builder('ios-clang-64', ['macos-64'], 'Unix Makefiles', '', 'arm64', True, False, False),
-        make_builder('macos-clang-arm64', ['macos-arm64'], 'Unix Makefiles', '', 'arm64', True, True, True),
+        make_builder('windows-vc16-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'x86', True, True, True, True),
+        make_builder('windows-vc16-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc16path, 'amd64', True, True, True, True),
+        make_builder('windows-vc17-32', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc17path, 'x86', True, True, True, True),
+        make_builder('windows-vc17-64', ['binary1248-windows', 'expl0it3r-windows'], 'NMake Makefiles JOM', paths.vc17path, 'amd64', True, True, True, True),
+        make_builder('windows-gcc-1220-mingw-32', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc1220mingw32path, '', True, True, True, True),
+        make_builder('windows-gcc-1220-mingw-64', ['binary1248-windows', 'expl0it3r-windows'], 'MinGW Makefiles', paths.gcc1220mingw64path, '', True, True, True, True),
+        make_builder('debian-gcc-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True, True, True),
+        make_builder('debian-clang-64', ['binary1248-debian'], 'Unix Makefiles', '', '', True, True, True, True),
+        make_builder('raspbian-gcc-armhf', ['expl0it3r-raspbian-armhf', 'binary1248-raspbian-armhf'], 'Unix Makefiles', '', '', True, True, False, False),
+        make_builder('raspbian-gcc-armhf-drm', ['expl0it3r-raspbian-armhf', 'binary1248-raspbian-armhf'], 'Unix Makefiles', '', '', True, True, False, False),
+        make_builder('android-armeabi-v7a', ['binary1248-android'], 'Unix Makefiles', '', '', True, False, False, False),
+        make_builder('static-analysis', ['binary1248-debian'], 'Unix Makefiles', '', '', False, True, True, True),
+        make_builder('coverity', ['binary1248-coverity'], 'Unix Makefiles', '', '', False, False, False, False),
+        make_builder('freebsd-gcc-64', ['binary1248-freebsd-64'], 'Unix Makefiles', '', '', False, True, False, False),
+        make_builder('macos-clang-64', ['macos-64'], 'Unix Makefiles', '', 'x86_64', True, True, True, True),
+        make_builder('ios-clang-64', ['macos-64'], 'Unix Makefiles', '', 'arm64', True, False, False, False),
+        make_builder('macos-clang-arm64', ['macos-arm64'], 'Unix Makefiles', '', 'arm64', True, True, True, True),
     ]
