@@ -450,7 +450,7 @@ def get_disable_sound_steps():
             name = 'disable sound',
             description = ['disabling sound'],
             descriptionDone = ['disable sound'],
-            doStepIf = lambda step : (step.build.getProperty('miniaudio_exists') is not None),
+            doStepIf = lambda step : (step.build.getProperty('miniaudio_exists') is True),
             hideStepIf = skipped_or_success,
             command = Interpolate('rm -vf /usr/lib/x86_64-linux-gnu/libasound.so* && rm -vf /usr/lib/x86_64-linux-gnu/libpulse.so* && rm -vf /usr/lib/x86_64-linux-gnu/libjack.so* && rm -vf /usr/lib/x86_64-linux-gnu/libsndio.so* && rm -vf /usr/lib/x86_64-linux-gnu/libaaudio.so* && rm -vf /usr/lib/x86_64-linux-gnu/libOpenSLES.so'),
             logEnviron = False
