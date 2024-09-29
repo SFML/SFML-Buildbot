@@ -40,14 +40,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 # CMake
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz \
-    && tar xzf cmake-3.26.3.tar.gz \
-    && cd cmake-3.26.3 \
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.30.4/cmake-3.30.4.tar.gz \
+    && tar xzf cmake-3.30.4.tar.gz \
+    && cd cmake-3.30.4 \
     && ./bootstrap --parallel=$(nproc) \
     && make -j $(nproc) install \
     && cmake --version \
     && cd .. \
-    && rm -rf cmake-3.26.3*
+    && rm -rf cmake-3.30.4*
 
 # pipx
 RUN rm /usr/lib/python3.*/EXTERNALLY-MANAGED \
@@ -71,11 +71,11 @@ RUN rm -rf /usr/local/share/cov-analysis \
     && rm -rf /usr/local/share/sonar
 
 ENV SONAR_TOKEN=${SONAR_TOKEN:-invalid}
-ENV SONAR_SCANNER_VERSION="5.0.1.3006"
+ENV SONAR_SCANNER_VERSION="6.2.0.4584-linux-x64"
 ENV SONAR_SCANNER_OPTS="-server"
 
 # Sonar
-RUN curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip \
+RUN curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION.zip \
     && unzip -o sonar-scanner.zip -d /usr/local/share/sonar/ \
     && mv /usr/local/share/sonar/* /usr/local/share/sonar/sonar-scanner-linux \
     && rm -rf sonar-scanner.zip \
