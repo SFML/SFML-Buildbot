@@ -399,7 +399,7 @@ def get_sonar_steps():
             description = ['running sonar scanner'],
             descriptionDone = ['run sonar scanner'],
             workdir = Interpolate('%(prop:builddir)s/build'),
-            command = Interpolate('sonar-scanner -Dsonar.organization=sfml -Dsonar.projectKey=SFML_SFML -Dsonar.sources=. -Dsonar.cfamily.build-wrapper-output=bw-output -Dsonar.host.url=https://sonarcloud.io -Dsonar.cfamily.threads=%(prop:parallel)s'),
+            command = Interpolate('sonar-scanner -Dsonar.organization=sfml -Dsonar.projectKey=SFML_SFML -Dsonar.sources=. -Dsonar.cfamily.compile-commands=bw-output/compile_commands.json -Dsonar.host.url=https://sonarcloud.io -Dsonar.cfamily.threads=%(prop:parallel)s'),
             want_stdout = True,
             want_stderr = True,
             logEnviron = False
