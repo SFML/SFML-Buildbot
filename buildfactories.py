@@ -33,7 +33,7 @@ def get_cmake_step(link, type, options = [], flag = None):
     build_ndk = ''
     build_ndk_toolchain_version = ''
     build_stl_type = ''
-    build_android_api = ''
+    build_system_version = ''
     build_stdlib = ''
     build_c_compiler = ''
     build_cxx_compiler = ''
@@ -41,7 +41,7 @@ def get_cmake_step(link, type, options = [], flag = None):
     install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install')
     frameworks_install_directory = ''
     misc_install_directory = ''
-    osx_architecture = ''
+    architecture = ''
     ios_platform = ''
     generator = Interpolate('%(prop:generator)s')
     suffix = ''
@@ -59,17 +59,17 @@ def get_cmake_step(link, type, options = [], flag = None):
         suffix.append('10.15')
 
     if 'android' in options:
-        build_target += '-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a'
+        architecture = Interpolate('-DCMAKE_ANDROID_ARCH_ABI=%(prop:architecture)s')
         install_prefix = Interpolate('')
         build_sdk = Interpolate('-DCMAKE_SYSTEM_NAME=Android')
-        build_ndk = Interpolate('-DCMAKE_ANDROID_NDK=%(prop:ANDROID_NDK_HOME)s')
+        build_ndk = Interpolate('-DCMAKE_ANDROID_NDK=%(prop:ANDROID_NDK_ROOT)s')
         build_ndk_toolchain_version += '-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang'
         build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
-        build_android_api += '-DCMAKE_ANDROID_API=26'
+        build_system_version = Interpolate('-DCMAKE_SYSTEM_VERSION=%(prop:api)s')
 
     if 'ios' in options:
         build_sdk = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake|-DCMAKE_SYSTEM_NAME=iOS)s')
-        osx_architecture = Interpolate('%(prop:ios_toolchain_cmake_exists:#?||-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s)s')
+        architecture = Interpolate('%(prop:ios_toolchain_cmake_exists:#?||-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s)s')
         ios_platform = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|-DIOS_PLATFORM=SIMULATOR|)s')
         generator = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|Xcode|%(prop:generator)s)s')
 
@@ -77,7 +77,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         install_prefix = Interpolate('-DCMAKE_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         frameworks_install_directory = Interpolate('-DSFML_DEPENDENCIES_INSTALL_PREFIX=%(prop:builddir)s/install/Library/Frameworks')
         misc_install_directory = Interpolate('-DSFML_MISC_INSTALL_PREFIX=%(prop:builddir)s/install/share/SFML')
-        osx_architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
+        architecture = Interpolate('-DCMAKE_OSX_ARCHITECTURES=%(prop:architecture)s')
 
     if ('clang' in options) or ('clang-tidy' in options):
         build_c_compiler += '-DCMAKE_C_COMPILER=clang'
@@ -97,10 +97,10 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-DCMAKE_VERBOSE_MAKEFILE=TRUE',
         '-DSFML_USE_MESA3D=TRUE',
         '-DSFML_BUILD_EXAMPLES=TRUE',
-        Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:run_tests)s'),
+        Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:build_tests)s'),
         Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
         Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:audio_device_tests)s'),
-        osx_architecture,
+        architecture,
         ios_platform,
         install_prefix,
         frameworks_install_directory,
@@ -112,7 +112,7 @@ def get_cmake_step(link, type, options = [], flag = None):
         build_ndk,
         build_ndk_toolchain_version,
         build_stl_type,
-        build_android_api,
+        build_system_version,
         build_c_compiler,
         build_cxx_compiler,
         build_stdlib,
@@ -136,7 +136,8 @@ def get_cmake_step(link, type, options = [], flag = None):
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
             'LIB' : Interpolate('%(prop:vc_lib)s'),
-            'LIBPATH' : Interpolate('%(prop:vc_libpath)s')
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'LIBCXX_SHARED_SO' : Interpolate('%(prop:LIBCXX_SHARED_SO)s')
         },
         want_stdout = True,
         want_stderr = True,
@@ -147,6 +148,7 @@ def get_build_step(link, type, options = [], flag = None):
     from buildbot.process.properties import Interpolate
     from buildbot.steps.shell import Compile
 
+    compile_command = ''
     suffix = ''
     target = 'install'
 
@@ -178,7 +180,24 @@ def get_build_step(link, type, options = [], flag = None):
 
     build_command += ' --target ' + target
 
-    compile_command = Interpolate('%(kw:command)s %(prop:run_tests:#?|runtests|)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
+    if 'android' in options:
+        test_command = ' && cmake --build . --target prepare-android-files 2>&1'
+
+        if type == 'debug':
+            test_command += ' --config Debug'
+        else:
+            test_command += ' --config Release'
+
+        test_command += ' && ctest --test-dir . --output-on-failure --repeat until-pass:3'
+
+        if type == 'debug':
+            test_command += ' -C Debug'
+        else:
+            test_command += ' -C Release'
+
+        compile_command = Interpolate('%(kw:build)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s %(prop:gradlew_exists:#?|%(prop:run_tests:#?| && adb connect %(prop:android_tester)s %(kw:test)s|)s|)s', build = build_command, test = test_command)
+    else:
+        compile_command = Interpolate('%(kw:command)s %(prop:run_tests:#?|runtests|)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
 
     return Compile(
         name = 'build (' + link + ' ' + type + ')',
@@ -194,6 +213,7 @@ def get_build_step(link, type, options = [], flag = None):
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
             'LIB' : Interpolate('%(prop:vc_lib)s'),
             'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'LIBCXX_SHARED_SO' : Interpolate('%(prop:LIBCXX_SHARED_SO)s'),
             'GALLIUM_DRIVER': 'llvmpipe'
         },
         want_stdout = True,
@@ -204,7 +224,7 @@ def get_build_step(link, type, options = [], flag = None):
 def get_env_step():
     from buildbot.steps.worker import SetPropertiesFromEnv
 
-    return [SetPropertiesFromEnv(variables = ['PATH', "ANDROID_HOME", "ANDROID_NDK_HOME"], hideStepIf = skipped_or_success)]
+    return [SetPropertiesFromEnv(variables = ['PATH', "ANDROID_HOME", "ANDROID_NDK_ROOT", "ANDROID_NDK_VERSION"], hideStepIf = skipped_or_success)]
 
 def extract_vs_paths(rc, stdout, stderr):
     toolchain_path = ''
@@ -236,6 +256,12 @@ def get_vs_env_step():
     from buildbot.process.properties import Interpolate
 
     return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:architecture)s > nul && set'), extract_fn = extract_vs_paths)]
+
+def get_android_libcxx_step():
+    from buildbot.steps.shell import SetPropertyFromCommand
+    from buildbot.process.properties import Interpolate
+
+    return [SetPropertyFromCommand(command = Interpolate('find %(prop:ANDROID_NDK_ROOT)s -path */%(prop:android_libcxx)s'), property = 'LIBCXX_SHARED_SO')]
 
 def get_shallow_clone_step():
     from buildbot.steps.source.git import Git
@@ -600,6 +626,7 @@ def get_build_factory(builder_name):
 
         steps.extend(get_cppcheck_steps())
     elif('android' in builder_name):
+        steps.extend(get_android_libcxx_step())
         steps.extend(check_file_exists('examples/android/gradlew', 'gradlew_exists'))
 
         # Old
@@ -617,11 +644,11 @@ def get_build_factory(builder_name):
         steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleDebug', 'gradlew_exists', True))
         steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleRelease', 'gradlew_exists', True))
         # New
-        steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleDebug -p examples/android -P ARCH_ABI=armeabi-v7a -P MIN_SDK=29 -P NDK_VERSION=21.4.7075529', 'gradlew_exists', False))
-        steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleRelease -p examples/android -P ARCH_ABI=armeabi-v7a -P MIN_SDK=29 -P NDK_VERSION=21.4.7075529', 'gradlew_exists', False))
+        steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleDebug -p examples/android -P ARCH_ABI=%(prop:architecture)s -P MIN_SDK=%(prop:api)s -P NDK_VERSION=%(prop:ANDROID_NDK_VERSION)s', 'gradlew_exists', False))
+        steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleRelease -p examples/android -P ARCH_ABI=%(prop:architecture)s -P MIN_SDK=%(prop:api)s -P NDK_VERSION=%(prop:ANDROID_NDK_VERSION)s', 'gradlew_exists', False))
 
         steps.extend(get_android_steps('create install directory', 'creating install directory', '%(prop:builddir)s/build/examples/android', 'mkdir -p %(prop:builddir)s/install'))
-        steps.extend(get_android_steps('archive library', 'archiving library', '%(prop:builddir)s/build/examples/android', 'cp -r %(prop:ANDROID_NDK_HOME)s/sources/third_party/sfml %(prop:builddir)s/install/.'))
+        steps.extend(get_android_steps('archive library', 'archiving library', '%(prop:builddir)s/build/examples/android', 'cp -r %(prop:ANDROID_NDK_ROOT)s/sources/third_party/sfml %(prop:builddir)s/install/.'))
         steps.extend(get_android_steps('archive debug example project', 'archiving debug example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/debug/*-debug.apk %(prop:builddir)s/install/.'))
         steps.extend(get_android_steps('archive release example project', 'archiving release example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/release/*-release-unsigned.apk %(prop:builddir)s/install/.'))
 
