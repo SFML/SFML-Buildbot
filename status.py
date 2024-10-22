@@ -26,7 +26,8 @@ def get_www():
             ]
         ),
         change_hook_dialects = {'base': True, 'github' : {}},
-        change_hook_auth = [strcred.makeChecker("file:changehook.passwd")]
+        change_hook_auth = [strcred.makeChecker("file:changehook.passwd")],
+        ws_ping_interval = 15
     )
 
 def get_github_status():
