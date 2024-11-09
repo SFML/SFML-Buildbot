@@ -647,16 +647,16 @@ def get_build_factory(builder_name):
         steps.extend(get_configuration_build_steps('static', 'release', ['android']))
 
         # Old
-        steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleDebug', 'gradlew_exists', True))
-        steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleRelease', 'gradlew_exists', True))
+        # steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleDebug', 'gradlew_exists', True))
+        # steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build/examples/android', 'gradle assembleRelease', 'gradlew_exists', True))
         # New
         steps.extend(get_android_steps('build debug example project', 'building debug example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleDebug -p examples/android -P ARCH_ABI=%(prop:architecture)s -P MIN_SDK=%(prop:api)s -P NDK_VERSION=%(prop:ANDROID_NDK_VERSION)s', 'gradlew_exists', False))
         steps.extend(get_android_steps('build release example project', 'building release example project', '%(prop:builddir)s/build', 'examples/android/gradlew assembleRelease -p examples/android -P ARCH_ABI=%(prop:architecture)s -P MIN_SDK=%(prop:api)s -P NDK_VERSION=%(prop:ANDROID_NDK_VERSION)s', 'gradlew_exists', False))
 
         steps.extend(get_android_steps('create install directory', 'creating install directory', '%(prop:builddir)s/build/examples/android', 'mkdir -p %(prop:builddir)s/install'))
         steps.extend(get_android_steps('archive library', 'archiving library', '%(prop:builddir)s/build/examples/android', 'cp -r %(prop:ANDROID_NDK_ROOT)s/sources/third_party/sfml %(prop:builddir)s/install/.'))
-        steps.extend(get_android_steps('archive debug example project', 'archiving debug example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/debug/*-debug.apk %(prop:builddir)s/install/.'))
-        steps.extend(get_android_steps('archive release example project', 'archiving release example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/release/*-release-unsigned.apk %(prop:builddir)s/install/.'))
+        steps.extend(get_android_steps('archive debug example project', 'archiving debug example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/debug/*-debug.apk %(prop:builddir)s/install/.', 'gradlew_exists', False))
+        steps.extend(get_android_steps('archive release example project', 'archiving release example project', '%(prop:builddir)s/build/examples/android', 'cp app/build/outputs/apk/release/*-release-unsigned.apk %(prop:builddir)s/install/.', 'gradlew_exists', False))
 
         steps.extend(get_artifact_step())
     elif('ios' in builder_name):
