@@ -45,6 +45,9 @@ def get_cmake_step(link, type, options = [], flag = None):
     ios_platform = ''
     generator = Interpolate('%(prop:generator)s')
     suffix = ''
+    build_tests = Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:build_tests)s')
+    display_tests = Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s')
+    audio_device_tests = Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:audio_device_tests)s')
 
     if 'frameworks' in options:
         build_frameworks += '-DSFML_BUILD_FRAMEWORKS=TRUE'
@@ -66,6 +69,9 @@ def get_cmake_step(link, type, options = [], flag = None):
         build_ndk_toolchain_version += '-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang'
         build_stl_type += '-DCMAKE_ANDROID_STL_TYPE=c++_shared'
         build_system_version = Interpolate('-DCMAKE_SYSTEM_VERSION=%(prop:api)s')
+        build_tests = Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:gradlew_exists:#?|%(prop:build_tests)s|False)s')
+        display_tests = Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:gradlew_exists:#?|%(prop:display_tests)s|False)s')
+        audio_device_tests = Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:gradlew_exists:#?|%(prop:audio_device_tests)s|False)s')
 
     if 'ios' in options:
         build_sdk = Interpolate('%(prop:ios_toolchain_cmake_exists:#?|-DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/iOS.toolchain.cmake|-DCMAKE_SYSTEM_NAME=iOS)s')
@@ -97,9 +103,9 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-DCMAKE_VERBOSE_MAKEFILE=TRUE',
         '-DSFML_USE_MESA3D=TRUE',
         '-DSFML_BUILD_EXAMPLES=TRUE',
-        Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:build_tests)s'),
-        Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s'),
-        Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:audio_device_tests)s'),
+        build_tests,
+        display_tests,
+        audio_device_tests,
         architecture,
         ios_platform,
         install_prefix,
