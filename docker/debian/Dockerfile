@@ -1,4 +1,4 @@
-FROM debian:unstable-slim AS final-layer
+FROM debian:stable-slim AS final-layer
 
 RUN DEBIAN_FRONTEND=noninteractive \
     ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
@@ -39,6 +39,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     python3-venv \
     xorg-dev \
     x11vnc \
+    x11-utils \
     xvfb \
     fluxbox \
     novnc \
@@ -108,11 +109,13 @@ FROM final-layer
 COPY --from=test-layer-gcc /verification-gcc.txt /verification-gcc.txt
 COPY --from=test-layer-clang /verification-clang.txt /verification-clang.txt
 
-RUN echo ' \n\
-Xvfb $DISPLAY -screen 0 1920x1080x24 & \n\
+RUN echo '#!/bin/bash \n\
+set -e \n\
+Xvfb $DISPLAY -screen 0 1920x1080x24 -ac +extension GLX +extension DPMS +render -noreset -s 1440 +bs -maxclients 256 +xinerama & \n\
+sleep 5 \n\
 fluxbox > /dev/null 2>&1 & \n\
-x11vnc -display $DISPLAY -viewonly -forever -shared -bg -nopw -localhost -quiet \n\
-websockify -D --web=/usr/share/novnc/ 8081 localhost:5900 \n\
+sleep 5 \n\
+xdpyinfo -queryExtensions | awk "/^name of display/,/^    significant bits in color specification/" \n\
 rm -rf $WORKERHOME \n\
 mkdir -p $WORKERHOME \n\
  \n\
@@ -129,8 +132,8 @@ ENV BUILDMASTER_PORT=9989
 ENV WORKERNAME="buildbot-worker-name"
 ENV WORKERPASS="buildbot-worker-password"
 ENV WORKERHOME=/home/buildbot-worker
-ENV WORKERADMIN="Your Name Here <admin@youraddress.invalid>"
-ENV WORKERDESCRIPTION="Please put a description of this build host here"
+ENV WORKERADMIN="binary1248 <binary1248@hotmail.com>"
+ENV WORKERDESCRIPTION="binary1248's Debian Buildbot Worker"
 
 ENV DISPLAY=":99"
 
