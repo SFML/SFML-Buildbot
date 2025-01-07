@@ -20,7 +20,13 @@ github_client_id = '<client id redacted>'
 
 github_client_secret = '<client secret redacted>'
 
-github_status_token = '<status token redacted>'
+github_app_id = '<app id redacted>'
+
+github_app_installation_id = '<app installation id redacted>'
+
+github_app_private_key_file = '<app private key file redacted>'
+
+github_app_private_key = '<app private key redacted>'
 
 coverity_token = '<coverity token redacted>'
 

@@ -1,3 +1,28 @@
+from buildbot.plugins import util
+
+@util.renderer
+def get_github_app_token(props):
+    # https://github.com/vaspapadopoulos/github-app-auth
+    import datetime
+    import requests
+    import jwt
+    import private
+
+    with open(private.github_app_private_key_file, "r") as key_file:
+        key = key_file.read()
+
+    now = int(datetime.datetime.now().timestamp())
+    payload = {
+        "iat": now - 60,
+        "exp": now + 60 * 8, # expire after 8 minutes
+        "iss": private.github_app_id,
+        "alg": "RS256"
+    }
+    encoded = jwt.encode(payload=payload, key=key, algorithm="RS256")
+    response = requests.post(f"https://api.github.com/app/installations/{private.github_app_installation_id}/access_tokens", headers={"Authorization": f"Bearer {encoded}"})
+
+    return response.json()["token"]
+
 def get_www():
     from buildbot.plugins import util
     from twisted.cred import strcred
@@ -37,7 +62,7 @@ def get_github_status():
 
     return [
         reporters.GitHubStatusPush(
-            token = private.github_status_token,
+            token = get_github_app_token,
             context = Interpolate("%(prop:buildername)s"),
             verbose = True
         )
