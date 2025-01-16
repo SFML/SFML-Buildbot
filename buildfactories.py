@@ -456,6 +456,29 @@ def get_sonar_steps():
         )
     ]
 
+def get_replace_step():
+    from buildbot.steps.shell import ShellCommand
+    from buildbot.process.properties import Interpolate
+
+    return [
+        ShellCommand(
+            name = 'replace strings',
+            description = ['replacing strings'],
+            descriptionDone = ['replace strings'],
+            haltOnFailure = True,
+            doStepIf = lambda step : (step.build.getProperty('replace_strings_in_files') is not None),
+            hideStepIf = skipped_or_success,
+            workdir = Interpolate('%(prop:builddir)s/build'),
+            command = Interpolate('%(prop:replace_strings_in_files)s'),
+            env = {
+                'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')
+            },
+            want_stdout = False,
+            want_stderr = False,
+            logEnviron = False
+        )
+    ]
+
 def get_patch_steps(string, replacement, file):
     from buildbot.steps.shell import ShellCommand
     from buildbot.process.properties import Interpolate
@@ -620,6 +643,7 @@ def get_build_factory(builder_name):
 
     if('coverity' not in builder_name):
         steps.extend(get_shallow_clone_step())
+        steps.extend(get_replace_step())
 
     if('debian' in builder_name):
         steps.extend(check_file_exists('extlibs/headers/miniaudio/miniaudio.h', 'miniaudio_exists'))
@@ -627,6 +651,7 @@ def get_build_factory(builder_name):
 
     if('coverity' in builder_name):
         steps.extend(get_clone_step())
+        steps.extend(get_replace_step())
         steps.extend(get_coverity_steps('static', 'debug'))
         steps.extend(get_sonar_steps())
     elif('static-analysis' in builder_name):

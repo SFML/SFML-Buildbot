@@ -19,7 +19,7 @@ def get_slaves():
         Worker('expl0it3r-raspbian-armhf', private.slave_passwords['expl0it3r-raspbian-armhf'], max_builds = 1, properties = {'parallel' : 2}),
 
         Worker('binary1248-freebsd-64', private.slave_passwords['binary1248-freebsd-64'], max_builds = 1, properties = {'parallel' : 1}),
-        Worker('binary1248-windows', private.slave_passwords['binary1248-windows'], max_builds = 1, properties = {'parallel' : 3}),
+        Worker('binary1248-windows', private.slave_passwords['binary1248-windows'], max_builds = 1, properties = {'parallel' : 3, 'replace_strings_in_files' : 'replace_strings_in_files'}),
         Worker('binary1248-raspbian-armhf', private.slave_passwords['binary1248-raspbian-armhf'], max_builds = 1, properties = {'parallel' : 2}),
 
         worker.DockerLatentWorker('binary1248-debian',   private.slave_passwords['binary1248-debian'],   docker_host = 'unix:///var/run/docker.sock', image = 'buildbot-worker-debian',   hostconfig = {'network_mode' : 'container:sfml-ci-network'}, masterFQDN = 'ci.sfml-dev.org', build_wait_timeout = 0, max_builds = 1, properties = {'parallel' : 1}),
