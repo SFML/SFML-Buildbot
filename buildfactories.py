@@ -265,7 +265,7 @@ def get_vs_env_step():
     from buildbot.steps.shell import SetPropertyFromCommand
     from buildbot.process.properties import Interpolate
 
-    return [SetPropertyFromCommand(env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:architecture)s > nul && set'), extract_fn = extract_vs_paths)]
+    return [SetPropertyFromCommand(hideStepIf = skipped_or_success, env = {'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s')}, command = Interpolate('vcvarsall.bat %(prop:architecture)s > nul && set'), extract_fn = extract_vs_paths)]
 
 def get_android_libcxx_step():
     from buildbot.steps.shell import SetPropertyFromCommand
