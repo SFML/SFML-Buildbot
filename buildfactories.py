@@ -190,24 +190,7 @@ def get_build_step(link, type, options = [], flag = None):
 
     build_command += ' --target ' + target
 
-    if 'android' in options:
-        test_command = ' && cmake --build . --target prepare-android-files 2>&1'
-
-        if type == 'debug':
-            test_command += ' --config Debug'
-        else:
-            test_command += ' --config Release'
-
-        test_command += ' && ctest --test-dir . --output-on-failure --repeat until-pass:3'
-
-        if type == 'debug':
-            test_command += ' -C Debug'
-        else:
-            test_command += ' -C Release'
-
-        compile_command = Interpolate('%(kw:build)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s %(prop:gradlew_exists:#?|%(prop:run_tests:#?| && adb connect %(prop:android_tester)s %(kw:test)s|)s|)s', build = build_command, test = test_command)
-    else:
-        compile_command = Interpolate('%(kw:command)s %(prop:run_tests:#?|runtests|)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
+    compile_command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
 
     return Compile(
         name = 'build (' + link + ' ' + type + ')',
@@ -218,6 +201,91 @@ def get_build_step(link, type, options = [], flag = None):
         hideStepIf = skipped,
         workdir = Interpolate('%(prop:builddir)s/build/build'),
         command = compile_command,
+        env = {
+            'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
+            'INCLUDE' : Interpolate('%(prop:vc_include)s'),
+            'LIB' : Interpolate('%(prop:vc_lib)s'),
+            'LIBPATH' : Interpolate('%(prop:vc_libpath)s'),
+            'LIBCXX_SHARED_SO' : Interpolate('%(prop:LIBCXX_SHARED_SO)s'),
+            'GALLIUM_DRIVER': 'llvmpipe'
+        },
+        want_stdout = True,
+        want_stderr = True,
+        logEnviron = False
+    )
+
+from buildbot.process import buildstep
+
+class TestCommand(buildstep.ShellMixin, buildstep.BuildStep):
+    from twisted.internet import defer
+
+    MAX_ATTEMPTS = 5
+
+    def __init__(self, **kwargs):
+        kwargs = self.setupShellMixin(kwargs)
+        super().__init__(**kwargs)
+
+    @defer.inlineCallbacks
+    def run(self):
+        test_command = self.command
+        restartx = self.getProperty("restartx")
+
+        # special handling when we have to deal with X server
+        if self.getProperty("display_tests") == True and restartx is not None:
+            # retry up to MAX_ATTEMPTS attempts
+            for attempt in range(self.MAX_ATTEMPTS):
+                # (re)start X server before every test run
+                cmd = yield self.makeRemoteShellCommand(command = [restartx])
+                yield self.runCommand(cmd)
+                cmd = yield self.makeRemoteShellCommand(command = test_command)
+                yield self.runCommand(cmd)
+                if not cmd.didFail():
+                    break;
+            return cmd.results()
+
+        # standard handling
+        cmd = yield self.makeRemoteShellCommand(command = test_command)
+        yield self.runCommand(cmd)
+        return cmd.results()
+
+def get_test_step(link, type, options = [], flag = None):
+    from buildbot.process.properties import Interpolate
+    from buildbot.steps.shell import ShellCommand
+
+    if 'frameworks' in options:
+        suffix = [link, type, 'frameworks']
+    else:
+        suffix = [link, type]
+
+    if 'newSDK' in options:
+        suffix.append('10.15')
+
+    common_test_command = 'ctest --test-dir . --output-on-failure --repeat until-pass:3'
+
+    if type == 'debug':
+        common_test_command += ' -C Debug'
+    else:
+        common_test_command += ' -C Release'
+
+    if 'android' in options:
+        if type == 'debug':
+            android_test_command = 'cmake --build . --config Debug --target prepare-android-files 2>&1 && ' + common_test_command
+        else:
+            android_test_command = 'cmake --build . --config Release --target prepare-android-files 2>&1 && ' + common_test_command
+
+        test_command = Interpolate('adb connect %(prop:android_tester)s && %(kw:test)s', test = android_test_command)
+    else:
+        test_command = Interpolate('%(kw:test)s', test = common_test_command)
+
+    return TestCommand(
+        name = 'test (' + link + ' ' + type + ')',
+        description = ['testing'],
+        descriptionSuffix = suffix,
+        descriptionDone = ['test'],
+        doStepIf = lambda step : ((step.build.getProperty('run_tests') == True) and (('android' not in options) or (step.build.getProperty('gradlew_exists') == True))),
+        hideStepIf = skipped,
+        workdir = Interpolate('%(prop:builddir)s/build/build'),
+        command = test_command,
         env = {
             'PATH' : Interpolate('%(prop:toolchain_path)s%(prop:PATH)s'),
             'INCLUDE' : Interpolate('%(prop:vc_include)s'),
@@ -342,6 +410,7 @@ def get_configuration_build_steps(link, type, options = [], flag = None):
         ),
         get_cmake_step(link, type, options, flag),
         get_build_step(link, type, options, flag),
+        get_test_step(link, type, options, flag),
         RemoveDirectory(
             name = 'remove build directory',
             description = ['removing build directory'],

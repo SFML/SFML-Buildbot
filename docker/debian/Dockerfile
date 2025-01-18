@@ -42,7 +42,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
     x11-utils \
     xvfb \
     fluxbox \
-    novnc \
+    eterm \
+    daemonize \
     && apt-get install --no-install-recommends -y libfuzzer-$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')-dev \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
@@ -109,23 +110,25 @@ FROM final-layer
 COPY --from=test-layer-gcc /verification-gcc.txt /verification-gcc.txt
 COPY --from=test-layer-clang /verification-clang.txt /verification-clang.txt
 
-RUN echo '#!/bin/bash \n\
+RUN echo '#!/bin/sh \n\
 set -e \n\
-Xvfb $DISPLAY -screen 0 1920x1080x24 -ac +extension GLX +extension DPMS +render -noreset -s 1440 +bs -maxclients 256 +xinerama & \n\
-sleep 5 \n\
-fluxbox > /dev/null 2>&1 & \n\
-sleep 5 \n\
-xdpyinfo -queryExtensions | awk "/^name of display/,/^    significant bits in color specification/" \n\
+pkill -SIGTERM "fluxbox|Xvfb" || true \n\
+daemonize /usr/bin/Xvfb $DISPLAY -screen 0 1920x1080x24 -ac +extension GLX +extension DPMS +render -noreset -s 1440 +bs -maxclients 256 +xinerama \n\
+sleep 1 \n\
+daemonize /usr/bin/fluxbox \n\
+sleep 1 \n\
+displayinfo=$(xdpyinfo -queryExtensions) \n\
+echo "$displayinfo" | awk "/^name of display/,/^    significant bits in color specification/" \n\
+' > /usr/local/bin/restartx && chmod +x /usr/local/bin/restartx
+
+RUN echo '#!/bin/sh \n\
 rm -rf $WORKERHOME \n\
 mkdir -p $WORKERHOME \n\
- \n\
 buildbot-worker create-worker $WORKERHOME $BUILDMASTER:$BUILDMASTER_PORT $WORKERNAME $WORKERPASS \n\
 echo $WORKERADMIN > $WORKERHOME/info/admin \n\
 echo $WORKERDESCRIPTION > $WORKERHOME/info/host \n\
- \n\
 buildbot-worker start --nodaemon $WORKERHOME \n\
-' > /start.sh \
-    && chmod +x /start.sh
+' > /start.sh && chmod +x /start.sh
 
 ENV BUILDMASTER="masteraddress.invalid"
 ENV BUILDMASTER_PORT=9989
