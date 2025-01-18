@@ -271,7 +271,7 @@ def get_android_libcxx_step():
     from buildbot.steps.shell import SetPropertyFromCommand
     from buildbot.process.properties import Interpolate
 
-    return [SetPropertyFromCommand(command = Interpolate('find %(prop:ANDROID_NDK_ROOT)s -path */%(prop:android_libcxx)s'), property = 'LIBCXX_SHARED_SO')]
+    return [SetPropertyFromCommand(hideStepIf = skipped_or_success, command = Interpolate('find %(prop:ANDROID_NDK_ROOT)s -path */%(prop:android_libcxx)s'), property = 'LIBCXX_SHARED_SO')]
 
 def get_shallow_clone_step():
     from buildbot.steps.source.git import Git
