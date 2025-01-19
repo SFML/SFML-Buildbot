@@ -154,9 +154,49 @@ def get_cmake_step(link, type, options = [], flag = None):
         logEnviron = False
     )
 
+from buildbot.steps.shell import Compile
+
+class CompileWithRetry(Compile):
+    from twisted.internet import defer
+    from buildbot.plugins import util
+
+    MAX_ATTEMPTS = 5
+    
+    class Observer(util.LogLineObserver):
+        failed = False
+    
+        def outLineReceived(self, line):
+            if 'PDB API call failed' in line:
+                self.failed = True
+
+    observer = Observer()
+
+    def __init__(self, **kwargs):
+        from buildbot.process import logobserver
+
+        super().__init__(**kwargs)
+
+        self.addLogObserver('stdio', self.observer)
+
+    @defer.inlineCallbacks
+    def run(self):
+        yield super().setup_suppression()
+
+        cmd = yield self.makeRemoteShellCommand()
+
+        # retry up to MAX_ATTEMPTS attempts
+        for attempt in range(self.MAX_ATTEMPTS):
+            self.observer.failed = False;
+            yield self.runCommand(cmd)
+            if not self.observer.failed:
+                break;
+
+        yield super().finish_logs()
+        yield super().createSummary()
+        return super().evaluateCommand(cmd)
+
 def get_build_step(link, type, options = [], flag = None):
     from buildbot.process.properties import Interpolate
-    from buildbot.steps.shell import Compile
 
     compile_command = ''
     suffix = ''
@@ -192,7 +232,7 @@ def get_build_step(link, type, options = [], flag = None):
 
     compile_command = Interpolate('%(kw:command)s %(prop:makefile:#?| -- -k -j %(prop:parallel)s|)s', command = build_command)
 
-    return Compile(
+    return CompileWithRetry(
         name = 'build (' + link + ' ' + type + ')',
         description = ['building'],
         descriptionSuffix = suffix,
