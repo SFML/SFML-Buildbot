@@ -161,22 +161,20 @@ class CompileWithRetry(Compile):
     from buildbot.plugins import util
 
     MAX_ATTEMPTS = 5
-    
-    class Observer(util.LogLineObserver):
-        failed = False
-    
-        def outLineReceived(self, line):
-            if 'PDB API call failed' in line:
-                self.failed = True
-
-    observer = Observer()
+    failed = False
 
     def __init__(self, **kwargs):
         from buildbot.process import logobserver
 
         super().__init__(**kwargs)
 
-        self.addLogObserver('stdio', self.observer)
+        self.addLogObserver('stdio', logobserver.LineConsumerLogObserver(self.logConsumer))
+    
+    def logConsumer(self):
+        while True:
+            _, line = yield
+            if 'PDB API call failed' in line:
+                self.failed = True
 
     @defer.inlineCallbacks
     def run(self):
@@ -186,10 +184,11 @@ class CompileWithRetry(Compile):
 
         # retry up to MAX_ATTEMPTS attempts
         for attempt in range(self.MAX_ATTEMPTS):
-            self.observer.failed = False;
+            self.failed = False;
             yield self.runCommand(cmd)
-            if not self.observer.failed:
-                break;
+
+            if not cmd.didFail() or not self.failed:
+                break
 
         yield super().finish_logs()
         yield super().createSummary()
