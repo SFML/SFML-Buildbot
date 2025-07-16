@@ -22,6 +22,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     gcovr \
     valgrind \
     afl++ \
+    libharfbuzz-dev \
     libfreetype-dev \
     libgbm-dev \
     libx11-dev \
@@ -43,7 +44,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     xvfb \
     fluxbox \
     novnc \
-    && apt-get --reinstall install libc6 libc6-dev \
+    && apt-get --reinstall install -y libc6 libc6-dev \
     && apt-get install --no-install-recommends -y libfuzzer-$(clang++ --version | sed -n 's/.*version \([0-9]\+\)\..*/\1/p')-dev \
     && dpkg-reconfigure --frontend noninteractive tzdata \
     && apt-get autoremove -y \
