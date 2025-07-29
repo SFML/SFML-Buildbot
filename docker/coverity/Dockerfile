@@ -12,6 +12,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     zip \
     unzip \
     git \
+    file \
     ninja-build \
     build-essential \
     libfreetype-dev \
