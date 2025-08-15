@@ -53,14 +53,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
     && rm -rf /var/lib/apt/lists/*
 
 # CMake
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.26.3/cmake-3.26.3.tar.gz \
-    && tar xzf cmake-3.26.3.tar.gz \
-    && cd cmake-3.26.3 \
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8.tar.gz \
+    && tar xzf cmake-3.31.8.tar.gz \
+    && cd cmake-3.31.8 \
     && ./bootstrap --parallel=$(nproc) \
     && make -j $(nproc) install \
     && cmake --version \
     && cd .. \
-    && rm -rf cmake-3.26.3*
+    && rm -rf cmake-3.31.8*
 
 # pipx
 RUN python3 -m pip install pipx \
