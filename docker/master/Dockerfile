@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm /usr/lib/python3.*/EXTERNALLY-MANAGED \
-    && pip3 install "buildbot[bundle]==4.0.4" "twisted==24.10.0" sqlalchemy buildbot-badges txrequests 
+    && pip3 install "buildbot[bundle]==4.3.0" "twisted==25.5.0" sqlalchemy buildbot-badges txrequests 
 
 EXPOSE 9989/tcp
 
