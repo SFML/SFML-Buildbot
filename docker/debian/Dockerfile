@@ -76,7 +76,7 @@ RUN pipx install 'buildbot-worker' \
     && rm -rf ~/.cache
 
 # Test Build GCC
-FROM final-layer as test-layer-gcc
+FROM final-layer AS test-layer-gcc
 
 RUN wget https://github.com/SFML/SFML/archive/refs/heads/master.zip \
     && unzip master.zip \
@@ -91,7 +91,7 @@ RUN wget https://github.com/SFML/SFML/archive/refs/heads/master.zip \
 RUN echo "OK" > /verification-gcc.txt
 
 # Test Build Clang
-FROM final-layer as test-layer-clang
+FROM final-layer AS test-layer-clang
 
 RUN wget https://github.com/SFML/SFML/archive/refs/heads/master.zip \
     && unzip master.zip \

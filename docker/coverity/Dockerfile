@@ -87,7 +87,7 @@ RUN curl --create-dirs -sSLo sonar-scanner.zip https://binaries.sonarsource.com/
     && rm -rf build-wrapper-linux-x86.zip
 
 # Test Build GCC
-FROM final-layer as test-layer-gcc
+FROM final-layer AS test-layer-gcc
 
 RUN wget https://github.com/SFML/SFML/archive/refs/heads/master.zip \
     && unzip master.zip \
@@ -132,7 +132,7 @@ ENV WORKERHOME=/home/buildbot-worker
 ENV WORKERADMIN="Your Name Here <admin@youraddress.invalid>"
 ENV WORKERDESCRIPTION="Please put a description of this build host here"
 
-ENV PATH "$PATH:/usr/local/share/cov-analysis/bin:/usr/local/share/sonar/sonar-scanner-linux/bin:/usr/local/share/sonar/build-wrapper-linux-x86"
+ENV PATH="$PATH:/usr/local/share/cov-analysis/bin:/usr/local/share/sonar/sonar-scanner-linux/bin:/usr/local/share/sonar/build-wrapper-linux-x86"
 ENV DISPLAY=":99"
 
 CMD /start.sh
