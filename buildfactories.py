@@ -48,6 +48,8 @@ def get_cmake_step(link, type, options = [], flag = None):
     build_tests = Interpolate('-DSFML_BUILD_TEST_SUITE=%(prop:build_tests)s')
     display_tests = Interpolate('-DSFML_RUN_DISPLAY_TESTS=%(prop:display_tests)s')
     audio_device_tests = Interpolate('-DSFML_RUN_AUDIO_DEVICE_TESTS=%(prop:audio_device_tests)s')
+    ipv6_link_tests = Interpolate('-DSFML_RUN_IPV6_LINK_TESTS=%(prop:ipv6_link_tests)s')
+    ipv6_internet_tests = Interpolate('-DSFML_RUN_IPV6_INTERNET_TESTS=%(prop:ipv6_internet_tests)s')
 
     if 'frameworks' in options:
         build_frameworks += '-DSFML_BUILD_FRAMEWORKS=TRUE'
@@ -104,12 +106,16 @@ def get_cmake_step(link, type, options = [], flag = None):
         '-DSFML_USE_MESA3D=ON',
         '-DCMAKE_CXX_EXTENSIONS=OFF',
         '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-        '-DSFML_BUILD_EXAMPLES=ON',\
+        '-DSFML_BUILD_EXAMPLES=ON',
         '-DSFML_ENABLE_STDLIB_ASSERTIONS=ON',
         '-DSFML_WARNINGS_AS_ERRORS=ON',
+        '-DSFML_RUN_IPV4_LINK_TESTS=ON',
+        '-DSFML_RUN_IPV4_INTERNET_TESTS=ON',
         build_tests,
         display_tests,
         audio_device_tests,
+        ipv6_link_tests,
+        ipv6_internet_tests,
         architecture,
         ios_platform,
         install_prefix,
