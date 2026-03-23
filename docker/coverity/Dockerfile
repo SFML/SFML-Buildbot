@@ -15,6 +15,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     file \
     ninja-build \
     build-essential \
+    libssh2-1-dev \
     libmbedtls-dev \
     libharfbuzz-dev \
     libfreetype-dev \

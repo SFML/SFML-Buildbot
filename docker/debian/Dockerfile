@@ -22,6 +22,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     gcovr \
     valgrind \
     afl++ \
+    libssh2-1-dev \
     libmbedtls-dev \
     libharfbuzz-dev \
     libfreetype-dev \
